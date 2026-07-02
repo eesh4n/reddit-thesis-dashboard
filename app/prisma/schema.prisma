@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Auth.js required models ---
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  emailVerified DateTime?
+  accounts      Account[]
+  sessions      Session[]
+  portfolios    Portfolio[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- App models ---
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  userId    String
+  ticker    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+}
+
+model SubredditSource {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  enabled Boolean @default(true)
+}
+
+model RawPost {
+  id          String             @id @default(cuid())
+  redditId    String             @unique
+  subreddit   String
+  author      String
+  permalink   String
+  text        String
+  postedAt    DateTime
+  fetchedAt   DateTime           @default(now())
+  theses      Thesis[]
+  failures    FailedExtraction[]
+}
+
+model Thesis {
+  id          String   @id @default(cuid())
+  rawPostId   String
+  ticker      String
+  summary     String
+  sentiment   String
+  confidence  Float
+  extractedAt DateTime @default(now())
+  rawPost     RawPost  @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+
+  @@index([ticker, extractedAt])
+}
+
+model FailedExtraction {
+  id          String   @id @default(cuid())
+  rawPostId   String
+  error       String
+  attemptedAt DateTime @default(now())
+  rawPost     RawPost  @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+}

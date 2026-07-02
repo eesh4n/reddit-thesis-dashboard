@@ -1,0 +1,9 @@
+﻿node_modules/
+.next/
+.env
+*.env.local
+worker/.venv/
+worker/venv/
+__pycache__/
+*.pyc
+.prisma/
