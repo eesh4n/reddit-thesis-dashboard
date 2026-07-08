@@ -13,13 +13,16 @@ def main():
 
     for name in subreddits:
         try:
-            posts = fetch_new_posts(name)
+            posts = fetch_new_posts(name, limit = 10)
         except Exception as e:
             print(f"  Skipping r/{name}: {e}")
             continue
         for post in posts:
             if db.insert_raw_post(post):
                 total_inserted += 1
+
+    print(f"Ingested {total_inserted} new posts across {len(subreddits)} subreddits.")
+
 
     llm_client = genai.Client(api_key = config.GEMINI_API_KEY)
     run_extraction(llm_client)

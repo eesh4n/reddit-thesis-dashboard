@@ -9,7 +9,8 @@ Extract every distinct stock ticker mentioned along with the thesis being made a
 
 Return ONLY a JSON array (no other text). Each element must have exactly these keys:
 - "ticker": the stock ticker symbol, uppercase, no "$" prefix
-- "summary": a one-sentence summary of the thesis being made about this ticker
+- "summary": a short one-line headline of the thesis (e.g. "Bearish on AAPL via puts")
+- "reasoning": 2-4 sentences explaining WHY the poster holds this view. Capture their actual argument, evidence, catalysts, price targets, or data they cite. If they gave no real reasoning, say so briefly (e.g. "No supporting reasoning given.").
 - "sentiment": one of "bullish", "bearish", "neutral"
 - "confidence": a float from 0.0 to 1.0 representing how confident you are this is a genuine investment thesis (not noise/joke/meme)
 
@@ -43,8 +44,12 @@ def run_extraction(llm_client):
         try:
             theses = extract_theses_from_text(post["text"], llm_client) 
             for t in theses:
-                db.insert_thesis(post["id"], t["ticker"], t["summary"], t["sentiment"], t["confidence"]) #if theses are found, saves each one
+                db.insert_thesis(post["id"], t["ticker"], t["summary"], t.get("reasoning", ""), t["sentiment"], t["confidence"]) #if theses are found, saves each one
             if not theses:
-                db.insert_failed_extraction(post["id", "no_tickers_found"]) #else, logs no tickers found
+                db.insert_failed_extraction(post["id"], "no_tickers_found") #else, logs no tickers found
         except Exception as e:
-            db.insert_failed_extraction(post["id"], str(e)) # catches any exception raised in the try block (e.g. claude api down, etc), records that this specific post failed storing the id + the exception message
+            # 429 rate-limit is temporary: stop now, leave these posts unextracted so they retry next run
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                print(f"  Rate limit hit — stopping extraction early, remaining posts will retry next run.")
+                break
+            db.insert_failed_extraction(post["id"], str(e)) # a real, permanent failure (bad JSON, etc) — record it so we don't retry forever

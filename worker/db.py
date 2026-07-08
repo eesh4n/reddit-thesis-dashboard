@@ -51,16 +51,16 @@ def get_unextracted_posts() -> list[dict]:
     finally:
         conn.close()
 
-def insert_thesis(raw_post_id: str, ticker: str, summary: str, sentiment: str, confidence: float):
+def insert_thesis(raw_post_id: str, ticker: str, summary: str, reasoning: str, sentiment: str, confidence: float):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
                 cur.execute(
                 """
-                INSERT INTO "Thesis" (id, "rawPostId", ticker, summary, sentiment, confidence)
-                VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s)
+                INSERT INTO "Thesis" (id, "rawPostId", ticker, summary, reasoning, sentiment, confidence)
+                VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s)
                 """,
-                (raw_post_id, ticker, summary, sentiment, confidence),
+                (raw_post_id, ticker, summary, reasoning, sentiment, confidence),
 
                 # inserts a row into thesis table. gen_random_uuid() generates the id in postgres. the %s placeholders map to the five variables shown below, psycopg2 fills them in safely.
             )

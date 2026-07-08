@@ -87,6 +87,7 @@ model Thesis {
   rawPostId   String
   ticker      String
   summary     String
+  reasoning   String   @default("")
   sentiment   String
   confidence  Float
   extractedAt DateTime @default(now())
