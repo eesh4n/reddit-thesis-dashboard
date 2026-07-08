@@ -24,7 +24,7 @@ def insert_raw_post(post: dict) -> bool:
                 VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT ("redditId") DO NOTHING
                 """,
-                (post["redditId"], post["subreddit"], ...),
+                (post["redditId"], post["subreddit"], post["author"], post["permalink"], post["text"], post["postedAt"]),
             )
             inserted = cur.rowcount == 1
             conn.commit()
@@ -35,7 +35,7 @@ def insert_raw_post(post: dict) -> bool:
 def get_unextracted_posts() -> list[dict]:
     conn = get_connection()
     try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur: # returns rows as dictionaries 
+        with conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur: # returns rows as dictionaries 
             cur.execute(
                 """
                 SELECT rp.id, rp.text FROM "RawPost" rp
