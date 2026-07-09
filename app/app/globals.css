@@ -1,9 +1,47 @@
-* {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  /* Sentiment Desk tokens */
+  --color-ink: #0c1116;
+  --color-panel: #131a22;
+  --color-panel-2: #18212b;
+  --color-edge: #223041;
+  --color-edge-soft: #1a2531;
+  --color-fg: #e9eef3;
+  --color-mute: #7e90a3;
+  --color-faint: #55677a;
+  --color-bull: #2fbf8f;
+  --color-bull-dim: #16352b;
+  --color-bear: #f26d5b;
+  --color-bear-dim: #38221e;
+  --color-gold: #e5b054;
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 html,
 body {
-  margin: 0;
-  padding: 0;
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #1a1204;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
