@@ -13,7 +13,7 @@ def main():
 
     for name in subreddits:
         try:
-            posts = fetch_new_posts(name, limit = 10)
+            posts = fetch_new_posts(name, limit = 50)
         except Exception as e:
             print(f"  Skipping r/{name}: {e}")
             continue
