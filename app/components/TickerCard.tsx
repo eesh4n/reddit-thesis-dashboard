@@ -9,8 +9,7 @@ const dotColor = {
 } as const;
 
 // One ticker with its sentiment balance and latest theses.
-// `onRemoveLabel` is display-only — you wire the actual remove handler.
-export default function TickerCard({ agg }: { agg: TickerAgg }) {
+export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove: () => void }) {
   const net = agg.bull - agg.bear;
   const lean =
     net > 0
@@ -26,8 +25,8 @@ export default function TickerCard({ agg }: { agg: TickerAgg }) {
         <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${lean.cls}`}>
           {lean.label}
         </span>
-        {/* TODO(you): wire this to remove the ticker from holdings/watchlist */}
         <button
+          onClick={onRemove}
           aria-label={`Remove ${agg.ticker}`}
           className="ml-auto rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors hover:border-bear hover:text-bear"
         >

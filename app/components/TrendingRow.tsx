@@ -3,7 +3,15 @@ import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
 
 // One row in the Trending list: rank, ticker, sentiment balance, add-to-watchlist.
-export default function TrendingRow({ agg, rank }: { agg: TickerAgg; rank: number }) {
+export default function TrendingRow({
+  agg,
+  rank,
+  onWatch,
+}: {
+  agg: TickerAgg;
+  rank: number;
+  onWatch: () => void;
+}) {
   const net = agg.bull - agg.bear;
   return (
     <div className="flex items-center gap-4 bg-panel px-5 py-3.5 transition-colors hover:bg-panel-2">
@@ -16,8 +24,10 @@ export default function TrendingRow({ agg, rank }: { agg: TickerAgg; rank: numbe
         {agg.theses.length} {agg.theses.length === 1 ? "thesis" : "theses"} · {net >= 0 ? "+" : ""}
         {net}
       </span>
-      {/* TODO(you): wire this to add the ticker to the watchlist */}
-      <button className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors hover:border-gold hover:text-gold">
+      <button
+        onClick={onWatch}
+        className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors hover:border-gold hover:text-gold"
+      >
         <Bookmark size={12} /> Watch
       </button>
     </div>
