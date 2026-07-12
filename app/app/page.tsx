@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { getAllTheses } from "@/lib/queries";
 import Sidebar from "@/components/Sidebar";
 import SentimentMeter from "@/components/SentimentMeter";
@@ -7,6 +8,7 @@ import { aggregateByTicker, type ThesisView } from "@/lib/view";
 export const dynamic = "force-dynamic"; // always read fresh from the db
 
 export default async function Home() {
+  const session = await auth(); // middleware already guarantees this exists here
   const rows = await getAllTheses(); // your query — real theses from Postgres
 
   // Map DB rows to the UI shape (flatten rawPost.permalink, narrow sentiment).
@@ -31,7 +33,7 @@ export default async function Home() {
 
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
-      <Sidebar thesisCount={theses.length} />
+      <Sidebar thesisCount={theses.length} email={session?.user?.email} />
 
       <main className="max-w-6xl pb-20">
         {/* ── Briefing header ── */}
@@ -49,7 +51,7 @@ export default async function Home() {
         </header>
 
         {/* Interactive sections (holdings / trending / watchlist) — client-side,
-            with holdings & watchlist persisted in localStorage. */}
+            holdings & watchlist are per-user rows in Postgres. */}
         <DashboardSections aggs={aggs} />
       </main>
     </div>

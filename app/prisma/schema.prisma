@@ -11,6 +11,7 @@ datasource db {
 model User {
   id            String      @id @default(cuid())
   email         String      @unique
+  passwordHash  String
   emailVerified DateTime?
   accounts      Account[]
   sessions      Session[]
@@ -57,10 +58,11 @@ model Portfolio {
   id        String   @id @default(cuid())
   userId    String
   ticker    String
+  list      String   @default("holding") // "holding" | "watchlist"
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, ticker])
+  @@unique([userId, ticker, list])
 }
 
 model SubredditSource {

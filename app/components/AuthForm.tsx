@@ -1,0 +1,141 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { LogIn, UserPlus, AlertCircle } from "lucide-react";
+
+export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
+  const router = useRouter();
+  const params = useSearchParams();
+  const from = params.get("from") ?? "/";
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+
+    try {
+      if (mode === "signup") {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Something went wrong.");
+          setPending(false);
+          return;
+        }
+      }
+
+      const result = await signIn("credentials", { email, password, redirect: false });
+      if (result?.error) {
+        setError("Incorrect email or password.");
+        setPending(false);
+        return;
+      }
+      router.push(from);
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Try again.");
+      setPending(false);
+    }
+  }
+
+  const isLogin = mode === "login";
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-ink px-6">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-gold to-[#b8842b] font-display text-base font-bold text-[#1a1204] shadow-[0_6px_16px_-6px_var(--color-gold)]">
+            ◆
+          </div>
+          <div className="text-left">
+            <div className="font-display text-[15px] font-semibold tracking-wide">Sentiment Desk</div>
+            <div className="text-[10.5px] uppercase tracking-[0.16em] text-faint">Reddit alpha</div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-edge bg-panel p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+          <h1 className="mb-1 font-display text-xl font-semibold tracking-tight">
+            {isLogin ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="mb-6 text-[13px] text-mute">
+            {isLogin ? "Sign in to see your holdings and watchlist." : "Track your holdings and watchlist across sessions."}
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[12.5px] text-mute">
+              Email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                placeholder="you@example.com"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[12.5px] text-mute">
+              Password
+              <input
+                type="password"
+                required
+                minLength={isLogin ? undefined : 8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                placeholder={isLogin ? "••••••••" : "At least 8 characters"}
+              />
+            </label>
+
+            {error && (
+              <div className="flex items-center gap-2 rounded-lg border border-bear/30 bg-bear-dim px-3 py-2 text-[12.5px] text-bear">
+                <AlertCircle size={14} className="shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={pending}
+              className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-[13.5px] font-semibold text-[#1a1204] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLogin ? <LogIn size={15} /> : <UserPlus size={15} />}
+              {pending ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
+            </button>
+          </form>
+        </div>
+
+        <p className="mt-5 text-center text-[13px] text-mute">
+          {isLogin ? (
+            <>
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="text-gold transition-colors hover:brightness-110">
+                Sign up
+              </Link>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <Link href="/login" className="text-gold transition-colors hover:brightness-110">
+                Sign in
+              </Link>
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}

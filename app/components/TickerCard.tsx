@@ -1,4 +1,5 @@
-import { ExternalLink, X } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, X, ArrowUpRight } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
 
@@ -8,7 +9,9 @@ const dotColor = {
   neutral: "bg-mute",
 } as const;
 
-// One ticker with its sentiment balance and latest theses.
+// One ticker with its sentiment balance and latest theses. The whole card
+// links to the ticker detail page; the remove button stops that click from
+// bubbling so you can remove without navigating.
 export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove: () => void }) {
   const net = agg.bull - agg.bear;
   const lean =
@@ -19,16 +22,27 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
         : { label: "mixed", cls: "bg-panel-2 text-mute" };
 
   return (
-    <article className="flex flex-col gap-4 rounded-xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#33445a]">
+    <Link
+      href={`/ticker/${agg.ticker}`}
+      className="group flex cursor-pointer flex-col gap-4 rounded-xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#33445a] hover:shadow-[0_12px_30px_-14px_rgba(0,0,0,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+    >
       <header className="flex items-center gap-2.5">
         <h3 className="font-mono text-lg font-semibold tracking-tight">{agg.ticker}</h3>
         <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${lean.cls}`}>
           {lean.label}
         </span>
+        <ArrowUpRight
+          size={14}
+          className="text-faint opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        />
         <button
-          onClick={onRemove}
+          onClick={(e) => {
+            e.preventDefault(); // don't navigate when removing
+            e.stopPropagation();
+            onRemove();
+          }}
           aria-label={`Remove ${agg.ticker}`}
-          className="ml-auto rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors hover:border-bear hover:text-bear"
+          className="ml-auto cursor-pointer rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors duration-150 hover:border-bear hover:text-bear"
         >
           <X size={13} />
         </button>
@@ -50,7 +64,8 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
                 href={t.permalink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 transition-colors hover:text-gold"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex cursor-pointer items-center gap-1 transition-colors duration-150 hover:text-gold"
               >
                 source <ExternalLink size={10} />
               </a>
@@ -62,7 +77,10 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
             No theses yet for {agg.ticker}. It will appear here when Reddit starts talking.
           </p>
         )}
+        {agg.theses.length > 2 && (
+          <p className="-mt-2 text-[11.5px] text-faint">+{agg.theses.length - 2} more · view all</p>
+        )}
       </div>
-    </article>
+    </Link>
   );
 }

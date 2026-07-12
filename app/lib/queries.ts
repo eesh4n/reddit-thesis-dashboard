@@ -11,3 +11,12 @@ export async function getAllTheses() {
     })
 
 };
+
+// All theses for one ticker, newest first — used by the ticker detail page.
+export async function getThesesForTicker(ticker: string) {
+    return prisma.thesis.findMany({
+        where: { ticker: ticker.toUpperCase() },
+        orderBy: { extractedAt: "desc" },
+        include: { rawPost: { select: { permalink: true, subreddit: true, author: true } } },
+    });
+}

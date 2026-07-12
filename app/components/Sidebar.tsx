@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Flame, Bookmark } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 function Clock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -28,7 +29,7 @@ const links = [
   { href: "#watchlist", label: "Watchlist", icon: Bookmark },
 ];
 
-export default function Sidebar({ thesisCount }: { thesisCount: number }) {
+export default function Sidebar({ thesisCount, email }: { thesisCount: number; email?: string | null }) {
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-8 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
       <div className="flex items-center gap-3">
@@ -47,7 +48,7 @@ export default function Sidebar({ thesisCount }: { thesisCount: number }) {
           <a
             key={href}
             href={href}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] text-mute transition-colors hover:bg-panel-2 hover:text-fg"
+            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
           >
             <Icon size={14} /> {label}
           </a>
@@ -60,6 +61,21 @@ export default function Sidebar({ thesisCount }: { thesisCount: number }) {
           Live feed · {thesisCount} theses
         </div>
         <Clock />
+
+        {email && (
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-edge-soft pt-3.5">
+            <span className="truncate text-[11.5px] text-faint" title={email}>
+              {email}
+            </span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              aria-label="Sign out"
+              className="shrink-0 cursor-pointer rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors duration-150 hover:border-bear hover:text-bear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

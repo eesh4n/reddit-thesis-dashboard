@@ -1,32 +1,54 @@
-"use client"; // browser side code, client component only
+"use client";
 
-import { useEffect, useState } from "react"; // useState holds data that can change and re renders UI, useEffect runs side effects like localStorage
+import { useEffect, useState, useCallback } from "react";
 
-export function useTickerList(storageKey: string, initial: string[] = []) { // custom hook is a func whos name starts with use, takes a storageKey "holdings" or "watchlist" and an optional starting array
+// Per-user ticker list backed by the Portfolio table (list = "holding" | "watchlist"),
+// via /api/portfolio. Replaces the old localStorage version now that lists are
+// tied to a signed-in account instead of a single browser.
+export function useTickerList(list: "holding" | "watchlist", initial: string[] = []) {
+  const [tickers, setTickers] = useState<string[]>(initial);
+  const [loaded, setLoaded] = useState(false);
 
-    const [tickers, setTickers] = useState<string[]>(initial); // tickers is the current array, setTickers is how you change it. when you call setTickers, react re renders every component using the data
-    // string tells react that the state value is an array of strings. initial is the arg, the value tickers will start as. returns a tuple, [value, setterFunction]
-    const [loaded, setLoaded] = useState(false); // have we read local storage yet?
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/portfolio?list=${list}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) {
+          setTickers(data.tickers ?? []);
+          setLoaded(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [list]);
 
-    useEffect(() => {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) setTickers(JSON.parse(saved));
-        setLoaded(true);
-    }, [storageKey]);
+  const add = useCallback(
+    async (ticker: string) => {
+      const clean = ticker.trim().toUpperCase();
+      if (!clean) return;
+      setTickers((prev) => (prev.includes(clean) ? prev : [...prev, clean])); // optimistic
+      await fetch("/api/portfolio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker: clean, list }),
+      });
+    },
+    [list],
+  );
 
-    useEffect(() => {
-        if (loaded) localStorage.setItem(storageKey, JSON.stringify(tickers));
-    }, [tickers, loaded, storageKey]);
+  const remove = useCallback(
+    async (ticker: string) => {
+      setTickers((prev) => prev.filter((t) => t !== ticker)); // optimistic
+      await fetch("/api/portfolio", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker, list }),
+      });
+    },
+    [list],
+  );
 
-    function add(ticker: string) {
-        const clean = ticker.trim().toUpperCase(); // normalize " nvda " -> "NVDA"
-        if (!clean) return; // reject empty input
-        setTickers((prev) => (prev.includes(clean) ? prev : [...prev, clean])); // no duplicates; new array so react sees the change
-    }
-
-    function remove(ticker: string) {
-        setTickers((prev) => prev.filter((t) => t !== ticker)); // new array with the ticker filtered out
-    }
-
-    return { tickers, add, remove, loaded }; // hand back the list + the functions to change it
+  return { tickers, add, remove, loaded };
 }
