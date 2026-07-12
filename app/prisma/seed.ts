@@ -1,9 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 
 config();
 
-const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
+// Prisma 7 connects through a driver adapter, same as lib/db.ts.
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const subreddits = ["wallstreetbets", "stocks", "investing", "options", "SecurityAnalysis"];
