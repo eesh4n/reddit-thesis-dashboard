@@ -44,3 +44,17 @@ def test_extract_batch_drops_invalid_theses():
     result = extract_batch([{"index": 0, "text": "TSLA"}], mock_client)
 
     assert result[0] == []
+
+
+def test_extract_batch_drops_low_confidence_trade_recaps():
+    # The prompt scores trade diaries / P&L updates below 0.5 — the floor drops them.
+    mock_client = MagicMock()
+    mock_client.models.generate_content.return_value = MagicMock(text=json.dumps([
+        {"index": 0, "theses": [
+            {"ticker": "ORCL", "summary": "Put credit spread showing gains", "reasoning": "No forward view given.", "sentiment": "bullish", "confidence": 0.3}
+        ]},
+    ]))
+
+    result = extract_batch([{"index": 0, "text": "my ORCL spread is up $160"}], mock_client)
+
+    assert result[0] == []

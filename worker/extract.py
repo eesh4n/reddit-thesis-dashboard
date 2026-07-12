@@ -14,6 +14,7 @@ MAX_CHARS = 2000        # cap per-post text so batches stay small
 THROTTLE_SECONDS = 5    # ~12 requests/minute, safely under the 20/min free-tier cap
 RATE_LIMIT_WAIT = 30    # seconds to wait out a 429 before retrying the same batch
 MAX_RETRIES = 6         # give up on a batch only after this many rate-limited attempts
+MIN_CONFIDENCE = 0.6    # drop trade recaps / unsupported opinions the prompt scores low
 
 # A post is worth sending only if it plausibly names a ticker: a $CASHTAG or a
 # short all-caps token. This is a cheap filter — false positives just cost a slot.
@@ -52,6 +53,21 @@ You will receive a JSON array of posts, each with an "index" and "text".
 
 For EACH post, extract every distinct stock ticker that has a real investment thesis.
 
+A thesis is a FORWARD-LOOKING ARGUMENT: a claim about where a stock is going, backed by
+reasoning a reader could evaluate — fundamentals, catalysts, valuation, data, or a clearly
+described repeatable strategy. It must offer something a reader could act on or research.
+
+Do NOT extract (return no thesis for these):
+- Trade diaries and P&L updates: "my spread is up $160", "sold my calls for a gain",
+  position screenshots, premium collected, gains/losses on an existing trade
+- Descriptions of what a trade WAS, with no view on where the stock goes NEXT
+- Questions with no view ("should I buy NVDA?"), portfolio-advice requests
+- Pure price commentary with no reasoning ("AAPL ripped today")
+- Memes, jokes, loss porn, celebration posts
+
+Test: would a stranger reading only your "reasoning" learn WHY the stock might move,
+not just WHAT the poster did? If not, skip it.
+
 Return ONLY a JSON array (no other text), one element per input post, each with:
 - "index": the post's index (integer, echo it back)
 - "theses": an array of thesis objects, each with exactly these keys:
@@ -59,7 +75,7 @@ Return ONLY a JSON array (no other text), one element per input post, each with:
     - "summary": a short one-line headline (e.g. "Bearish on AAPL via puts")
     - "reasoning": 2-4 sentences on WHY the poster holds this view — their argument, evidence, catalysts, price targets, or data. If none given, say so briefly.
     - "sentiment": one of "bullish", "bearish", "neutral"
-    - "confidence": float 0.0-1.0 that this is a genuine thesis (not noise/joke/meme)
+    - "confidence": float 0.0-1.0 that this is a genuine, actionable thesis (apply the test above strictly; trade recaps and unsupported opinions score below 0.5)
   If a post has no real ticker thesis, use an empty array for "theses".
 
 Posts:
@@ -78,7 +94,7 @@ def extract_batch(posts: list[dict], llm_client) -> dict[int, list[dict]]:
     out: dict[int, list[dict]] = {}
     for item in parsed:
         idx = item.get("index")
-        theses = [t for t in item.get("theses", []) if _valid(t)]
+        theses = [t for t in item.get("theses", []) if _valid(t) and float(t["confidence"]) >= MIN_CONFIDENCE]
         if isinstance(idx, int):
             out[idx] = theses
     return out
