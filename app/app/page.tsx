@@ -41,7 +41,7 @@ export default async function Home() {
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
       <Sidebar thesisCount={theses.length} email={session?.user?.email} />
 
-      <main className="max-w-6xl pb-20">
+      <main className="mx-auto w-full max-w-[1600px] pb-20">
         {/* ── Briefing header — big bold number is the hero moment ── */}
         <header className="flex items-end justify-between gap-8 border-b border-edge-soft px-11 pb-8 pt-10 max-md:flex-col max-md:items-start max-md:px-6">
           <div>
