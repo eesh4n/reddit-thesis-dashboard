@@ -2,14 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 import { getThesesForTicker, getDailySentiment } from "@/lib/queries";
+import { computeConsensus } from "@/lib/view";
 import SentimentMeter from "@/components/SentimentMeter";
 import Sparkline from "@/components/Sparkline";
 import ThesisSortList, { type DetailThesis } from "@/components/ThesisSortList";
 
 export const dynamic = "force-dynamic";
-
-const CONSENSUS_MIN_COUNT = 3;
-const CONSENSUS_MIN_RATIO = 2;
 
 export default async function TickerDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol } = await params;
@@ -34,12 +32,7 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
   const bear = theses.filter((t) => t.sentiment === "bearish").length;
   const neutral = theses.length - bull - bear;
 
-  const consensus =
-    bull >= CONSENSUS_MIN_COUNT && bull >= bear * CONSENSUS_MIN_RATIO
-      ? "bullish"
-      : bear >= CONSENSUS_MIN_COUNT && bear >= bull * CONSENSUS_MIN_RATIO
-        ? "bearish"
-        : null;
+  const consensus = computeConsensus(bull, bear);
 
   return (
     <div className="mx-auto max-w-3xl px-6 pb-20 pt-9 md:px-11">

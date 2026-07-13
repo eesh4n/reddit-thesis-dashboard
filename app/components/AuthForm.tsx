@@ -9,7 +9,12 @@ import { LogIn, UserPlus, AlertCircle } from "lucide-react";
 export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const params = useSearchParams();
-  const from = params.get("from") ?? "/";
+  // Only accept a same-origin path (starts with "/", not "//" which the
+  // browser treats as protocol-relative). Otherwise `from` is attacker-
+  // controlled input — "/login?from=https://evil.com" would open-redirect
+  // a freshly authenticated user straight off the site.
+  const rawFrom = params.get("from");
+  const from = rawFrom && rawFrom.startsWith("/") && !rawFrom.startsWith("//") ? rawFrom : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,6 +97,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 type="password"
                 required
                 minLength={isLogin ? undefined : 8}
+                maxLength={isLogin ? undefined : 72}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isLogin ? "current-password" : "new-password"}

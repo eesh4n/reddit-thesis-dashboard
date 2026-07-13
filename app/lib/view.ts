@@ -24,7 +24,11 @@ export type TickerAgg = {
 const CONSENSUS_MIN_COUNT = 3; // at least this many posts on the dominant side
 const CONSENSUS_MIN_RATIO = 2; // and that side must outnumber the other by this much
 
-function computeConsensus(bull: number, bear: number): "bullish" | "bearish" | null {
+// Exported so every place that decides "does this ticker have consensus"
+// (dashboard cards, trending rows, the ticker detail page) uses the exact
+// same rule. Two copies of this threshold logic already drifted into being
+// duplicated once — don't let it happen again.
+export function computeConsensus(bull: number, bear: number): "bullish" | "bearish" | null {
   if (bull >= CONSENSUS_MIN_COUNT && bull >= bear * CONSENSUS_MIN_RATIO) return "bullish";
   if (bear >= CONSENSUS_MIN_COUNT && bear >= bull * CONSENSUS_MIN_RATIO) return "bearish";
   return null;
