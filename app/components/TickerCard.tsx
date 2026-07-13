@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { ExternalLink, X, ArrowUpRight } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
@@ -10,9 +12,12 @@ const dotColor = {
 } as const;
 
 // One ticker with its sentiment balance and latest theses. The whole card
-// links to the ticker detail page; the remove button stops that click from
-// bubbling so you can remove without navigating.
+// navigates to the ticker detail page on click. It's a <div> (not a <Link>)
+// because it contains a real <a> for the Reddit source — nesting an <a>
+// inside an <a> is invalid HTML and breaks hydration. role="link" + tabIndex
+// + onKeyDown keep it keyboard-accessible despite not being a native anchor.
 export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove: () => void }) {
+  const router = useRouter();
   const net = agg.bull - agg.bear;
   const lean =
     net > 0
@@ -21,9 +26,21 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
         ? { label: "net bearish", cls: "bg-bear-dim text-bear" }
         : { label: "mixed", cls: "bg-panel-2 text-mute" };
 
+  const href = `/ticker/${agg.ticker}`;
+  const goToDetail = () => router.push(href);
+
   return (
-    <Link
-      href={`/ticker/${agg.ticker}`}
+    <div
+      role="link"
+      tabIndex={0}
+      aria-label={`View all theses for ${agg.ticker}`}
+      onClick={goToDetail}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToDetail();
+        }
+      }}
       className="group flex cursor-pointer flex-col gap-4 rounded-xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#33445a] hover:shadow-[0_12px_30px_-14px_rgba(0,0,0,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
     >
       <header className="flex items-center gap-2.5">
@@ -37,8 +54,7 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
         />
         <button
           onClick={(e) => {
-            e.preventDefault(); // don't navigate when removing
-            e.stopPropagation();
+            e.stopPropagation(); // don't trigger the card's navigate
             onRemove();
           }}
           aria-label={`Remove ${agg.ticker}`}
@@ -64,7 +80,7 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
                 href={t.permalink}
                 target="_blank"
                 rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()} // don't trigger the card's navigate
                 className="inline-flex cursor-pointer items-center gap-1 transition-colors duration-150 hover:text-gold"
               >
                 source <ExternalLink size={10} />
@@ -81,6 +97,6 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
           <p className="-mt-2 text-[11.5px] text-faint">+{agg.theses.length - 2} more · view all</p>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
