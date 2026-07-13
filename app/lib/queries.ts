@@ -5,7 +5,7 @@ export async function getAllTheses() {
     return prisma.thesis.findMany({
 
         orderBy: { extractedAt: "desc"}, // sort by extractedAt timestamp, desc returns newest (descending)
-        include: { rawPost: { select: {permalink: true }}}, // include pulls in a related table (Thesis -> rawPost), and from that selected post grab only the permalink field (not the whole post)
+        include: { rawPost: { select: {permalink: true, postedAt: true }}}, // include pulls in a related table (Thesis -> rawPost); postedAt is when the Reddit post itself went up, not when we scraped it
 
 
     })
@@ -17,7 +17,7 @@ export async function getThesesForTicker(ticker: string) {
     return prisma.thesis.findMany({
         where: { ticker: ticker.toUpperCase() },
         orderBy: { extractedAt: "desc" },
-        include: { rawPost: { select: { permalink: true, subreddit: true, author: true } } },
+        include: { rawPost: { select: { permalink: true, subreddit: true, author: true, postedAt: true } } },
     });
 }
 

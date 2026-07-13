@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ExternalLink, X, ArrowUpRight, Users } from "lucide-react";
+import { ExternalLink, X, ArrowUpRight, Users, Calendar } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
+import { formatPostDate } from "@/lib/formatDate";
 
 const dotColor = {
   bullish: "bg-bull",
@@ -83,6 +84,9 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
             </p>
             <p className="pl-3.5 text-[12.5px] leading-relaxed text-mute">{t.reasoning}</p>
             <div className="mt-2 flex items-center gap-3 pl-3.5 font-mono text-[11px] text-faint">
+              <span className="inline-flex items-center gap-1">
+                <Calendar size={10} /> {formatPostDate(t.postedAt)}
+              </span>
               <span>{Math.round(t.confidence * 100)}% conf</span>
               <a
                 href={t.permalink}

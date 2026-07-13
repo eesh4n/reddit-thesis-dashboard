@@ -25,6 +25,7 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
     sentiment: r.sentiment as DetailThesis["sentiment"],
     confidence: r.confidence,
     extractedAt: r.extractedAt.toISOString(),
+    postedAt: r.rawPost.postedAt.toISOString(),
     permalink: r.rawPost.permalink,
     subreddit: r.rawPost.subreddit,
   }));

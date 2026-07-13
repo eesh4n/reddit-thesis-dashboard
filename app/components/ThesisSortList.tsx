@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ExternalLink, ArrowUpDown, Calendar } from "lucide-react";
+import { formatPostDate } from "@/lib/formatDate";
 
 export type DetailThesis = {
   id: string;
@@ -9,7 +10,8 @@ export type DetailThesis = {
   reasoning: string;
   sentiment: "bullish" | "bearish" | "neutral";
   confidence: number;
-  extractedAt: string; // ISO
+  extractedAt: string; // ISO — when we scraped/extracted it (used for the time filter)
+  postedAt: string; // ISO — when the Reddit post itself went up (shown on the card)
   permalink: string;
   subreddit: string;
 };
@@ -109,7 +111,11 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
               </span>
               <span className="text-[11px] text-faint">·</span>
               <span className="font-mono text-[11px] text-faint">{Math.round(t.confidence * 100)}% confidence</span>
-              <span className="ml-auto text-[11px] text-faint">r/{t.subreddit}</span>
+              <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-faint">
+                <Calendar size={10} /> {formatPostDate(t.postedAt)}
+              </span>
+              <span className="text-[11px] text-faint">·</span>
+              <span className="text-[11px] text-faint">r/{t.subreddit}</span>
             </div>
             <p className="mb-1.5 text-[14.5px] font-medium leading-snug">{t.summary}</p>
             <p className="text-[13px] leading-relaxed text-mute">{t.reasoning}</p>

@@ -9,6 +9,7 @@ export type ThesisView = {
   sentiment: "bullish" | "bearish" | "neutral";
   confidence: number; // 0..1
   permalink: string;
+  postedAt: string; // ISO — when the Reddit post itself went up
 };
 
 export type TickerAgg = {

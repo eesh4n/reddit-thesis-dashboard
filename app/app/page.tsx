@@ -22,6 +22,7 @@ export default async function Home() {
     sentiment: r.sentiment as ThesisView["sentiment"],
     confidence: r.confidence,
     permalink: r.rawPost.permalink,
+    postedAt: r.rawPost.postedAt.toISOString(),
   }));
 
   const aggs = [...aggregateByTicker(theses).values()];
