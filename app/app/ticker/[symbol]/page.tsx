@@ -53,12 +53,12 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
       <header className="mb-9 border-b border-edge-soft pb-7">
         <div className="flex items-end justify-between gap-6 max-md:flex-col max-md:items-start">
           <div>
-            <p className="mb-2.5 text-[11px] uppercase tracking-[0.2em] text-gold">Ticker briefing</p>
-            <div className="flex items-center gap-3">
-              <h1 className="font-mono text-[36px] font-semibold leading-none tracking-tight">{ticker}</h1>
+            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Ticker briefing</p>
+            <div className="flex items-center gap-3.5">
+              <h1 className="font-mono text-[48px] font-extrabold leading-none tracking-tight">{ticker}</h1>
               {consensus && (
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider ${consensus === "bullish" ? "bg-bull-dim text-bull" : "bg-bear-dim text-bear"}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider ${consensus === "bullish" ? "bg-bull-dim text-bull" : "bg-bear-dim text-bear"}`}
                 >
                   <Users size={12} /> {consensus} consensus
                 </span>

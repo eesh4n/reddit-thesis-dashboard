@@ -1,20 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* Sentiment Desk tokens */
-  --color-ink: #0c1116;
-  --color-panel: #131a22;
-  --color-panel-2: #18212b;
-  --color-edge: #223041;
-  --color-edge-soft: #1a2531;
-  --color-fg: #e9eef3;
-  --color-mute: #7e90a3;
-  --color-faint: #55677a;
-  --color-bull: #2fbf8f;
-  --color-bull-dim: #16352b;
-  --color-bear: #f26d5b;
-  --color-bear-dim: #38221e;
-  --color-gold: #e5b054;
+  /* Sentiment Desk tokens — bold consumer-app pass: deeper black, punchier
+     signal colors, more contrast between surfaces so cards pop off the bg. */
+  --color-ink: #07090c;
+  --color-panel: #12161c;
+  --color-panel-2: #191f27;
+  --color-edge: #262f3a;
+  --color-edge-soft: #1c2229;
+  --color-fg: #f5f7fa;
+  --color-mute: #8b98a8;
+  --color-faint: #5c6a7a;
+  --color-bull: #00d47e;
+  --color-bull-dim: #0e2e21;
+  --color-bear: #ff4d4d;
+  --color-bear-dim: #3a1616;
+  --color-gold: #ffb547;
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);

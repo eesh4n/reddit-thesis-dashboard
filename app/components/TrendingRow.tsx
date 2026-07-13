@@ -15,11 +15,11 @@ export default function TrendingRow({
 }) {
   const net = agg.bull - agg.bear;
   return (
-    <div className="flex items-center gap-4 bg-panel px-5 py-3.5 transition-colors duration-150 hover:bg-panel-2">
-      <span className="w-6 font-mono text-xs text-faint">{String(rank).padStart(2, "0")}</span>
+    <div className="flex items-center gap-4 bg-panel px-5 py-4 transition-colors duration-150 hover:bg-panel-2">
+      <span className="w-6 font-mono text-xs font-bold text-faint">{String(rank).padStart(2, "0")}</span>
       <Link
         href={`/ticker/${agg.ticker}`}
-        className="w-16 cursor-pointer font-mono text-[15px] font-semibold transition-colors duration-150 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        className="w-16 cursor-pointer font-mono text-base font-extrabold tracking-tight transition-colors duration-150 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       >
         {agg.ticker}
       </Link>

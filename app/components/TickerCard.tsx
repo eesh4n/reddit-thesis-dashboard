@@ -42,11 +42,11 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
           goToDetail();
         }
       }}
-      className="group flex cursor-pointer flex-col gap-4 rounded-xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#33445a] hover:shadow-[0_12px_30px_-14px_rgba(0,0,0,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+      className="group flex cursor-pointer flex-col gap-4 rounded-2xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-1 hover:border-[#3a4658] hover:shadow-[0_16px_36px_-14px_rgba(0,0,0,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
     >
       <header className="flex items-center gap-2.5">
-        <h3 className="font-mono text-lg font-semibold tracking-tight">{agg.ticker}</h3>
-        <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${lean.cls}`}>
+        <h3 className="font-mono text-xl font-extrabold tracking-tight">{agg.ticker}</h3>
+        <span className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${lean.cls}`}>
           {lean.label}
         </span>
         {agg.consensus && (

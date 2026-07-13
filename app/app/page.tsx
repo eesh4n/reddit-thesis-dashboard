@@ -33,22 +33,31 @@ export default async function Home() {
     else if (t.sentiment === "bearish") totals.bear++;
     else totals.neutral++;
   }
+  const directional = totals.bull + totals.bear;
+  const bullPct = directional > 0 ? Math.round((totals.bull / directional) * 100) : 50;
+  const isBullish = bullPct >= 50;
 
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
       <Sidebar thesisCount={theses.length} email={session?.user?.email} />
 
       <main className="max-w-6xl pb-20">
-        {/* ── Briefing header ── */}
-        <header className="flex items-end justify-between gap-6 border-b border-edge-soft px-11 pb-7 pt-9 max-md:flex-col max-md:items-start max-md:px-6">
+        {/* ── Briefing header — big bold number is the hero moment ── */}
+        <header className="flex items-end justify-between gap-8 border-b border-edge-soft px-11 pb-8 pt-10 max-md:flex-col max-md:items-start max-md:px-6">
           <div>
-            <p className="mb-2.5 text-[11px] uppercase tracking-[0.2em] text-gold">Morning briefing</p>
-            <h1 className="font-display text-[34px] font-semibold leading-[1.05] tracking-tight">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Morning briefing</p>
+            <h1 className="font-display text-[40px] font-bold leading-[1.02] tracking-tight max-md:text-[30px]">
               What Reddit is saying <span className="text-mute">about your book.</span>
             </h1>
           </div>
-          <div className="min-w-56 text-right max-md:text-left">
-            <p className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-faint">Aggregate sentiment</p>
+          <div className="min-w-64 text-right max-md:text-left">
+            <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint">
+              Aggregate sentiment
+            </p>
+            <div className={`font-display text-[52px] font-bold leading-none tracking-tight ${isBullish ? "text-bull" : "text-bear"}`}>
+              {bullPct}<span className="text-3xl">%</span>
+            </div>
+            <p className="mb-3 text-[12px] font-semibold text-faint">bullish across {theses.length} theses</p>
             <SentimentMeter bull={totals.bull} bear={totals.bear} neutral={totals.neutral} />
           </div>
         </header>

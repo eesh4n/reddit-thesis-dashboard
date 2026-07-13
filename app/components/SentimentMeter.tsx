@@ -13,14 +13,14 @@ export default function SentimentMeter({
 }) {
   const total = bull + bear + neutral || 1;
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex h-2 overflow-hidden rounded-full bg-panel-2">
-        <div className="bg-bull" style={{ width: `${(bull / total) * 100}%` }} />
+    <div className="flex flex-col gap-2">
+      <div className={`flex overflow-hidden rounded-full bg-panel-2 ${compact ? "h-2" : "h-3"}`}>
+        <div className="bg-bull shadow-[0_0_10px_-2px_var(--color-bull)]" style={{ width: `${(bull / total) * 100}%` }} />
         <div className="bg-[#3a4655]" style={{ width: `${(neutral / total) * 100}%` }} />
-        <div className="bg-bear" style={{ width: `${(bear / total) * 100}%` }} />
+        <div className="bg-bear shadow-[0_0_10px_-2px_var(--color-bear)]" style={{ width: `${(bear / total) * 100}%` }} />
       </div>
       {!compact && (
-        <div className="flex justify-between font-mono text-[11px]">
+        <div className="flex justify-between font-mono text-[12px] font-semibold">
           <span className="text-bull">{bull} bull</span>
           {neutral > 0 && <span className="text-faint">{neutral} neutral</span>}
           <span className="text-bear">{bear} bear</span>

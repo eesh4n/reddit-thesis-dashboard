@@ -34,24 +34,24 @@ export default function Sidebar({ thesisCount, email }: { thesisCount: number; e
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-8 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
       <div className="flex items-center gap-3">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-gold to-[#b8842b] font-display text-[15px] font-bold text-[#1a1204] shadow-[0_6px_16px_-6px_var(--color-gold)]">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold to-[#c2790f] font-display text-lg font-bold text-[#1a1204] shadow-[0_8px_20px_-6px_var(--color-gold)]">
           ◆
         </div>
         <div>
-          <div className="font-display text-[15px] font-semibold tracking-wide">Sentiment Desk</div>
-          <div className="text-[10.5px] uppercase tracking-[0.16em] text-faint">Reddit alpha</div>
+          <div className="font-display text-base font-bold tracking-tight">Sentiment Desk</div>
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint">Reddit alpha</div>
         </div>
       </div>
 
-      <nav className="flex flex-col gap-0.5 max-md:flex-row">
-        <div className="mb-2 ml-2.5 text-[10px] uppercase tracking-[0.18em] text-faint max-md:hidden">Desk</div>
+      <nav className="flex flex-col gap-1 max-md:flex-row">
+        <div className="mb-2 ml-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-faint max-md:hidden">Desk</div>
         {links.map(({ href, label, icon: Icon }) => (
           <a
             key={href}
             href={href}
-            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
+            className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
           >
-            <Icon size={14} /> {label}
+            <Icon size={16} /> {label}
           </a>
         ))}
       </nav>
