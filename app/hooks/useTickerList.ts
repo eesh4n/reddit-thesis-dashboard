@@ -24,16 +24,31 @@ export function useTickerList(list: "holding" | "watchlist", initial: string[] =
     };
   }, [list]);
 
+  // Returns an error message on failure so callers can surface it; rolls
+  // back the optimistic insert instead of leaving a "ghost" ticker in the
+  // UI that was never actually saved server-side.
   const add = useCallback(
-    async (ticker: string) => {
+    async (ticker: string): Promise<string | null> => {
       const clean = ticker.trim().toUpperCase();
-      if (!clean) return;
+      if (!clean) return "Enter a ticker.";
       setTickers((prev) => (prev.includes(clean) ? prev : [...prev, clean])); // optimistic
-      await fetch("/api/portfolio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticker: clean, list }),
-      });
+
+      try {
+        const res = await fetch("/api/portfolio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ticker: clean, list }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          setTickers((prev) => prev.filter((t) => t !== clean)); // roll back
+          return data?.error ?? "Couldn't add that ticker.";
+        }
+        return null;
+      } catch {
+        setTickers((prev) => prev.filter((t) => t !== clean)); // roll back
+        return "Network error — try again.";
+      }
     },
     [list],
   );

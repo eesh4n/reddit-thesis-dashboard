@@ -7,6 +7,17 @@ function parseList(value: unknown): "holding" | "watchlist" | null {
   return value === "holding" || value === "watchlist" ? value : null;
 }
 
+// Real tickers are short and use letters/digits/dots (e.g. BRK.B). Reject
+// anything else so a bad request can't stuff an arbitrarily long string into
+// the DB and every card/nav element that renders it.
+const TICKER_RE = /^[A-Z0-9.]{1,10}$/;
+
+function cleanTicker(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const clean = value.trim().toUpperCase();
+  return TICKER_RE.test(clean) ? clean : null;
+}
+
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
@@ -27,8 +38,8 @@ export async function POST(req: Request) {
 
   const { ticker, list: rawList } = await req.json();
   const list = parseList(rawList) ?? "holding";
-  const clean = typeof ticker === "string" ? ticker.trim().toUpperCase() : "";
-  if (!clean) return NextResponse.json({ error: "Ticker is required." }, { status: 400 });
+  const clean = cleanTicker(ticker);
+  if (!clean) return NextResponse.json({ error: "Enter a valid ticker (letters, digits, up to 10 characters)." }, { status: 400 });
 
   const row = await prisma.portfolio.upsert({
     where: { userId_ticker_list: { userId: session.user.id, ticker: clean, list } },
@@ -44,7 +55,7 @@ export async function DELETE(req: Request) {
 
   const { ticker, list: rawList } = await req.json();
   const list = parseList(rawList) ?? "holding";
-  const clean = typeof ticker === "string" ? ticker.trim().toUpperCase() : "";
+  const clean = cleanTicker(ticker) ?? "";
 
   await prisma.portfolio.deleteMany({ where: { userId: session.user.id, ticker: clean, list } });
   return NextResponse.json({ ok: true });

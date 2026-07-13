@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/db";
 
-export async function getAllTheses() {
+// Bounded to the last N days: the dashboard only needs recent activity for
+// holdings/trending, and this table grows daily with the scraper — an
+// unbounded findMany() here would get slower every single day forever.
+export async function getAllTheses(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     return prisma.thesis.findMany({
-
+        where: { extractedAt: { gte: since } },
         orderBy: { extractedAt: "desc"}, // sort by extractedAt timestamp, desc returns newest (descending)
         include: { rawPost: { select: {permalink: true, postedAt: true }}}, // include pulls in a related table (Thesis -> rawPost); postedAt is when the Reddit post itself went up, not when we scraped it
 
