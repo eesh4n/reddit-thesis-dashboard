@@ -15,7 +15,7 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
 
   const byTicker = new Map(aggs.map((a) => [a.ticker, a]));
   const agg = (ticker: string): TickerAgg =>
-    byTicker.get(ticker) ?? { ticker, bull: 0, bear: 0, neutral: 0, theses: [] };
+    byTicker.get(ticker) ?? { ticker, bull: 0, bear: 0, neutral: 0, theses: [], consensus: null };
 
   const trending = aggs
     .filter((a) => !holdings.tickers.includes(a.ticker) && !watchlist.tickers.includes(a.ticker))

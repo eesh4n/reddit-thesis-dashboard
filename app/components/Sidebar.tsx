@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Flame, Bookmark, LogOut } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, Sparkles } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 function Clock() {
@@ -24,6 +24,7 @@ function Clock() {
 }
 
 const links = [
+  { href: "#digest", label: "What Changed", icon: Sparkles },
   { href: "#holdings", label: "Your Holdings", icon: Briefcase },
   { href: "#trending", label: "Trending Ideas", icon: Flame },
   { href: "#watchlist", label: "Watchlist", icon: Bookmark },

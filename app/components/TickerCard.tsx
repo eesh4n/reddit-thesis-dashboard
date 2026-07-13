@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ExternalLink, X, ArrowUpRight } from "lucide-react";
+import { ExternalLink, X, ArrowUpRight, Users } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
 
@@ -48,6 +48,14 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
         <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${lean.cls}`}>
           {lean.label}
         </span>
+        {agg.consensus && (
+          <span
+            title={`${agg.consensus === "bullish" ? agg.bull : agg.bear} independent posts agree`}
+            className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${agg.consensus === "bullish" ? "bg-bull-dim text-bull" : "bg-bear-dim text-bear"}`}
+          >
+            <Users size={9} /> consensus
+          </span>
+        )}
         <ArrowUpRight
           size={14}
           className="text-faint opacity-0 transition-opacity duration-150 group-hover:opacity-100"

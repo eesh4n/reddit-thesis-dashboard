@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ExternalLink, ArrowUpDown } from "lucide-react";
+import { ExternalLink, ArrowUpDown, Calendar } from "lucide-react";
 
 export type DetailThesis = {
   id: string;
@@ -18,6 +18,7 @@ const dotColor = { bullish: "bg-bull", bearish: "bg-bear", neutral: "bg-mute" } 
 const textColor = { bullish: "text-bull", bearish: "text-bear", neutral: "text-mute" } as const;
 
 type SortKey = "newest" | "bullish" | "bearish" | "confidence";
+type RangeKey = "all" | "24h" | "7d" | "30d";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "newest", label: "Newest" },
@@ -26,11 +27,26 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "confidence", label: "Confidence" },
 ];
 
+const RANGE_OPTIONS: { key: RangeKey; label: string; hours: number | null }[] = [
+  { key: "24h", label: "24h", hours: 24 },
+  { key: "7d", label: "7d", hours: 24 * 7 },
+  { key: "30d", label: "30d", hours: 24 * 30 },
+  { key: "all", label: "All time", hours: null },
+];
+
 export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
   const [sort, setSort] = useState<SortKey>("newest");
+  const [range, setRange] = useState<RangeKey>("all");
+
+  const filtered = useMemo(() => {
+    const opt = RANGE_OPTIONS.find((r) => r.key === range)!;
+    if (opt.hours === null) return theses;
+    const cutoff = Date.now() - opt.hours * 60 * 60 * 1000;
+    return theses.filter((t) => new Date(t.extractedAt).getTime() >= cutoff);
+  }, [theses, range]);
 
   const sorted = useMemo(() => {
-    const copy = [...theses];
+    const copy = [...filtered];
     switch (sort) {
       case "bullish":
         // Bullish first, bearish last, each group newest-first.
@@ -42,10 +58,27 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
       default:
         return copy; // already newest-first from the query
     }
-  }, [theses, sort]);
+  }, [filtered, sort]);
 
   return (
     <div>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Calendar size={13} className="mr-1 text-faint" />
+        {RANGE_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => setRange(opt.key)}
+            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              range === opt.key
+                ? "border-gold bg-gold/15 text-gold"
+                : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <ArrowUpDown size={13} className="mr-1 text-faint" />
         {SORT_OPTIONS.map((opt) => (
@@ -62,7 +95,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
           </button>
         ))}
         <span className="ml-auto text-[12px] text-faint">
-          {theses.length} {theses.length === 1 ? "thesis" : "theses"}
+          {sorted.length} {sorted.length === 1 ? "thesis" : "theses"}
         </span>
       </div>
 
@@ -92,7 +125,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
         ))}
         {sorted.length === 0 && (
           <div className="rounded-xl border border-dashed border-edge p-10 text-center text-[13px] text-faint">
-            No theses recorded for this ticker yet.
+            {theses.length === 0 ? "No theses recorded for this ticker yet." : "No theses in this time range."}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Users } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
 
@@ -23,6 +23,13 @@ export default function TrendingRow({
       >
         {agg.ticker}
       </Link>
+      {agg.consensus && (
+        <Users
+          size={12}
+          className={agg.consensus === "bullish" ? "text-bull" : "text-bear"}
+          aria-label={`Consensus ${agg.consensus}`}
+        />
+      )}
       <div className="max-w-56 flex-1">
         <SentimentMeter bull={agg.bull} bear={agg.bear} neutral={agg.neutral} compact />
       </div>
