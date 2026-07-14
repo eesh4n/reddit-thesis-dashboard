@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Briefcase, Flame, Bookmark, LogOut, Sparkles } from "lucide-react";
 import { signOut } from "next-auth/react";
+import TickerSearch from "./TickerSearch";
 
 function Clock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -30,9 +31,17 @@ const links = [
   { href: "#watchlist", label: "Watchlist", icon: Bookmark },
 ];
 
-export default function Sidebar({ thesisCount, email }: { thesisCount: number; email?: string | null }) {
+export default function Sidebar({
+  thesisCount,
+  email,
+  knownTickers,
+}: {
+  thesisCount: number;
+  email?: string | null;
+  knownTickers: string[];
+}) {
   return (
-    <aside className="sticky top-0 flex h-screen flex-col gap-8 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
+    <aside className="sticky top-0 flex h-screen flex-col gap-6 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
       <div className="flex items-center gap-3">
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold to-[#c2790f] font-display text-lg font-bold text-[#1a1204] shadow-[0_8px_20px_-6px_var(--color-gold)]">
           ◆
@@ -42,6 +51,8 @@ export default function Sidebar({ thesisCount, email }: { thesisCount: number; e
           <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint">Reddit alpha</div>
         </div>
       </div>
+
+      <TickerSearch knownTickers={knownTickers} />
 
       <nav className="flex flex-col gap-1 max-md:flex-row">
         <div className="mb-2 ml-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-faint max-md:hidden">Desk</div>

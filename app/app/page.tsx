@@ -39,7 +39,7 @@ export default async function Home() {
 
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
-      <Sidebar thesisCount={theses.length} email={session?.user?.email} />
+      <Sidebar thesisCount={theses.length} email={session?.user?.email} knownTickers={aggs.map((a) => a.ticker)} />
 
       <main className="mx-auto w-full max-w-[1600px] pb-20">
         {/* ── Briefing header — big bold number is the hero moment ── */}
