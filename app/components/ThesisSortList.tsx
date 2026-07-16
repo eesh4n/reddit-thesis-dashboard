@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ExternalLink, ArrowUpDown, Calendar } from "lucide-react";
+import { ExternalLink, ArrowUpDown, Calendar, Hash } from "lucide-react";
 import { formatPostDate } from "@/lib/formatDate";
 
 export type DetailThesis = {
@@ -39,13 +39,25 @@ const RANGE_OPTIONS: { key: RangeKey; label: string; hours: number | null }[] = 
 export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
   const [sort, setSort] = useState<SortKey>("newest");
   const [range, setRange] = useState<RangeKey>("all");
+  const [subreddit, setSubreddit] = useState<string>("all"); // "all" or a subreddit name
+
+  // Unique source subreddits for this ticker, biggest contributor first —
+  // drives the filter chips so you can isolate one community's view.
+  const subreddits = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of theses) counts.set(t.subreddit, (counts.get(t.subreddit) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [theses]);
 
   const filtered = useMemo(() => {
     const opt = RANGE_OPTIONS.find((r) => r.key === range)!;
-    if (opt.hours === null) return theses;
-    const cutoff = Date.now() - opt.hours * 60 * 60 * 1000;
-    return theses.filter((t) => new Date(t.extractedAt).getTime() >= cutoff);
-  }, [theses, range]);
+    const cutoff = opt.hours === null ? null : Date.now() - opt.hours * 60 * 60 * 1000;
+    return theses.filter(
+      (t) =>
+        (cutoff === null || new Date(t.extractedAt).getTime() >= cutoff) &&
+        (subreddit === "all" || t.subreddit === subreddit),
+    );
+  }, [theses, range, subreddit]);
 
   const sorted = useMemo(() => {
     const copy = [...filtered];
@@ -80,6 +92,35 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
           </button>
         ))}
       </div>
+
+      {subreddits.length > 1 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <Hash size={13} className="mr-1 text-faint" />
+          <button
+            onClick={() => setSubreddit("all")}
+            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              subreddit === "all"
+                ? "border-gold bg-gold/15 text-gold"
+                : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
+            }`}
+          >
+            All subs
+          </button>
+          {subreddits.map(([name, count]) => (
+            <button
+              key={name}
+              onClick={() => setSubreddit(name)}
+              className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+                subreddit === name
+                  ? "border-gold bg-gold/15 text-gold"
+                  : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
+              }`}
+            >
+              r/{name} <span className="opacity-60">{count}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <ArrowUpDown size={13} className="mr-1 text-faint" />
@@ -131,7 +172,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
         ))}
         {sorted.length === 0 && (
           <div className="rounded-xl border border-dashed border-edge p-10 text-center text-[13px] text-faint">
-            {theses.length === 0 ? "No theses recorded for this ticker yet." : "No theses in this time range."}
+            {theses.length === 0 ? "No theses recorded for this ticker yet." : "No theses match these filters."}
           </div>
         )}
       </div>
