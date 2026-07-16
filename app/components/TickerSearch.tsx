@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
@@ -11,6 +11,21 @@ export default function TickerSearch({ knownTickers }: { knownTickers: string[] 
   const router = useRouter();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Press "/" anywhere (except while typing in another field) to jump to search.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      const typing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+      if (e.key === "/" && !typing) {
+        e.preventDefault(); // stop the browser's quick-find from opening
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <form
@@ -31,6 +46,7 @@ export default function TickerSearch({ knownTickers }: { knownTickers: string[] 
       <div className="relative">
         <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
         <input
+          ref={inputRef}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);

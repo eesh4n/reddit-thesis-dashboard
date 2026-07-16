@@ -19,9 +19,22 @@ export default function Sparkline({ points }: { points: { date: string; net: num
   const path = coords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ");
   const zeroY = height - pad - ((0 - min) / range) * (height - pad * 2);
   const trendUp = points.length > 1 && points[points.length - 1].net >= points[0].net;
+  const color = trendUp ? "var(--color-bull)" : "var(--color-bear)";
+
+  // Close the line path down to the zero baseline to make a fillable area.
+  const first = coords[0];
+  const lastC = coords[coords.length - 1];
+  const areaPath = `${path} L ${lastC.x.toFixed(1)} ${zeroY.toFixed(1)} L ${first.x.toFixed(1)} ${zeroY.toFixed(1)} Z`;
+  const gradientId = trendUp ? "spark-fill-up" : "spark-fill-down";
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`} className="h-8 w-full" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
       <line
         x1={0}
         y1={zeroY}
@@ -31,10 +44,11 @@ export default function Sparkline({ points }: { points: { date: string; net: num
         strokeWidth={1}
         strokeDasharray="2 2"
       />
+      <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
       <path
         d={path}
         fill="none"
-        stroke={trendUp ? "var(--color-bull)" : "var(--color-bear)"}
+        stroke={color}
         strokeWidth={1.6}
         strokeLinecap="round"
         strokeLinejoin="round"

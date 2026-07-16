@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 import { getThesesForTicker, getDailySentiment } from "@/lib/queries";
+import { getPriceInfo } from "@/lib/price";
 import { computeConsensus } from "@/lib/view";
 import SentimentMeter from "@/components/SentimentMeter";
 import Sparkline from "@/components/Sparkline";
@@ -12,7 +13,11 @@ export const dynamic = "force-dynamic";
 export default async function TickerDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol } = await params;
   const ticker = symbol.toUpperCase();
-  const [rows, trend] = await Promise.all([getThesesForTicker(ticker), getDailySentiment(ticker, 14)]);
+  const [rows, trend, price] = await Promise.all([
+    getThesesForTicker(ticker),
+    getDailySentiment(ticker, 14),
+    getPriceInfo(ticker),
+  ]);
 
   if (rows.length === 0) notFound();
 
@@ -57,6 +62,16 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
                 </span>
               )}
             </div>
+            {price && (
+              <p className="mt-2.5 font-mono text-[15px] font-semibold">
+                ${price.last.toFixed(2)}{" "}
+                <span className={price.changePct5d >= 0 ? "text-bull" : "text-bear"}>
+                  {price.changePct5d >= 0 ? "+" : ""}
+                  {price.changePct5d.toFixed(1)}%
+                </span>{" "}
+                <span className="text-[11px] font-normal text-faint">5d</span>
+              </p>
+            )}
           </div>
           <div className="min-w-56 text-right max-md:text-left">
             <p className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-faint">Sentiment split</p>
