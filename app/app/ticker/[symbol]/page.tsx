@@ -2,11 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getThesesForTicker, getDailySentiment, getUserNotes } from "@/lib/queries";
-import { getPriceInfo } from "@/lib/price";
+import { getThesesForTicker, getDailySentiment, getUserNotes, getUserFeedback } from "@/lib/queries";
+import { getPriceInfo, getPriceHistory } from "@/lib/price";
+import { getRelatedTickers } from "@/lib/related";
 import { computeConsensusFromTheses } from "@/lib/view";
 import SentimentMeter from "@/components/SentimentMeter";
 import Sparkline from "@/components/Sparkline";
+import RelatedTickers from "@/components/RelatedTickers";
 import ThesisSortList, { type DetailThesis } from "@/components/ThesisSortList";
 
 export const dynamic = "force-dynamic";
@@ -15,15 +17,20 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
   const { symbol } = await params;
   const ticker = symbol.toUpperCase();
   const session = await auth(); // middleware already guarantees this exists here
-  const [rows, trend, price] = await Promise.all([
+  const [rows, trend, price, priceHistory, related] = await Promise.all([
     getThesesForTicker(ticker),
     getDailySentiment(ticker, 14),
     getPriceInfo(ticker),
+    getPriceHistory(ticker, 14),
+    getRelatedTickers(ticker),
   ]);
 
   if (rows.length === 0) notFound();
 
-  const notes = await getUserNotes(session!.user.id, rows.map((r) => r.id));
+  const [notes, feedback] = await Promise.all([
+    getUserNotes(session!.user.id, rows.map((r) => r.id)),
+    getUserFeedback(session!.user.id, rows.map((r) => r.id)),
+  ]);
 
   const theses: DetailThesis[] = rows.map((r) => ({
     id: r.id,
@@ -37,6 +44,7 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
     subreddit: r.rawPost.subreddit,
     author: r.rawPost.author,
     note: notes[r.id] ?? "",
+    vote: feedback[r.id] ?? null,
   }));
 
   const bull = theses.filter((t) => t.sentiment === "bullish").length;
@@ -86,10 +94,12 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
         </div>
 
         <div className="mt-6">
-          <p className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-faint">14-day sentiment trend</p>
-          <Sparkline points={trend} />
+          <p className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-faint">14-day sentiment trend vs price</p>
+          <Sparkline points={trend} pricePoints={priceHistory} />
         </div>
       </header>
+
+      <RelatedTickers related={related} />
 
       <ThesisSortList theses={theses} />
     </div>

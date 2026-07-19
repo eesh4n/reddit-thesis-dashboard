@@ -58,3 +58,20 @@ def test_extract_batch_drops_low_confidence_trade_recaps():
     result = extract_batch([{"index": 0, "text": "my ORCL spread is up $160"}], mock_client)
 
     assert result[0] == []
+
+
+def test_extract_batch_drops_thesis_missing_summary():
+    # Regression test: a real Gemini response once omitted "summary" from a
+    # thesis object. _valid() didn't check for it, so it passed through and
+    # crashed insert_thesis() with a KeyError mid-run, killing the whole
+    # extraction pass. summary must be required just like ticker/sentiment.
+    mock_client = MagicMock()
+    mock_client.models.generate_content.return_value = MagicMock(text=json.dumps([
+        {"index": 0, "theses": [
+            {"ticker": "NVDA", "reasoning": "y", "sentiment": "bullish", "confidence": 0.9}
+        ]},
+    ]))
+
+    result = extract_batch([{"index": 0, "text": "NVDA thoughts"}], mock_client)
+
+    assert result[0] == []

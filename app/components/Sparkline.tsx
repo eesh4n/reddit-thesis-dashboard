@@ -1,6 +1,16 @@
-// Small inline SVG trend line — no charting library needed for one line.
-// Plots net sentiment (bull - bear) per day over the window.
-export default function Sparkline({ points }: { points: { date: string; net: number; total: number }[] }) {
+// Small inline SVG trend line — no charting library needed. Plots net
+// sentiment (bull - bear) per day, with an optional price overlay so you can
+// eyeball whether Reddit sentiment actually tracks the stock's real moves.
+type SentimentPoint = { date: string; net: number; total: number };
+type PricePoint = { date: string; close: number };
+
+export default function Sparkline({
+  points,
+  pricePoints,
+}: {
+  points: SentimentPoint[];
+  pricePoints?: PricePoint[] | null;
+}) {
   const width = 100;
   const height = 32;
   const pad = 2;
@@ -27,32 +37,73 @@ export default function Sparkline({ points }: { points: { date: string; net: num
   const areaPath = `${path} L ${lastC.x.toFixed(1)} ${zeroY.toFixed(1)} L ${first.x.toFixed(1)} ${zeroY.toFixed(1)} Z`;
   const gradientId = trendUp ? "spark-fill-up" : "spark-fill-down";
 
+  // Price overlay: forward-fill onto the same date axis as the sentiment
+  // points (markets are closed weekends/holidays, sentiment isn't), then
+  // scale independently — price and net-sentiment live on wildly different
+  // ranges, so sharing a y-axis would flatten one of them to nothing.
+  let pricePath: string | null = null;
+  if (pricePoints && pricePoints.length > 1) {
+    const closeByDate = new Map(pricePoints.map((p) => [p.date, p.close]));
+    let lastKnown = pricePoints[0].close;
+    const filled = points.map((p) => {
+      const close = closeByDate.get(p.date);
+      if (close != null) lastKnown = close;
+      return lastKnown;
+    });
+    const pMax = Math.max(...filled);
+    const pMin = Math.min(...filled);
+    const pRange = pMax - pMin || 1;
+    const pCoords = filled.map((close, i) => {
+      const x = (i / (filled.length - 1 || 1)) * (width - pad * 2) + pad;
+      const y = height - pad - ((close - pMin) / pRange) * (height - pad * 2);
+      return { x, y };
+    });
+    pricePath = pCoords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ");
+  }
+
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-8 w-full" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.35} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
-      <line
-        x1={0}
-        y1={zeroY}
-        x2={width}
-        y2={zeroY}
-        stroke="var(--color-edge-soft)"
-        strokeWidth={1}
-        strokeDasharray="2 2"
-      />
-      <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
-      <path
-        d={path}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-8 w-full" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+        <line
+          x1={0}
+          y1={zeroY}
+          x2={width}
+          y2={zeroY}
+          stroke="var(--color-edge-soft)"
+          strokeWidth={1}
+          strokeDasharray="2 2"
+        />
+        <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
+        <path d={path} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+        {pricePath && (
+          <path
+            d={pricePath}
+            fill="none"
+            stroke="var(--color-gold)"
+            strokeWidth={1.3}
+            strokeDasharray="3 2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={0.85}
+          />
+        )}
+      </svg>
+      {pricePath && (
+        <div className="mt-1.5 flex items-center gap-3 text-[10.5px] text-faint">
+          <span className="inline-flex items-center gap-1">
+            <span className={`inline-block h-0.5 w-3 rounded-full ${trendUp ? "bg-bull" : "bg-bear"}`} /> sentiment
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block h-0.5 w-3 rounded-full border-t border-dashed border-gold" /> price
+          </span>
+        </div>
+      )}
+    </div>
   );
 }

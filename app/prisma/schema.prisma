@@ -17,6 +17,7 @@ model User {
   sessions      Session[]
   portfolios    Portfolio[]
   notes         ThesisNote[]
+  feedback      ThesisFeedback[]
 }
 
 model Account {
@@ -99,6 +100,7 @@ model Thesis {
   extractedAt DateTime     @default(now())
   rawPost     RawPost      @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
   notes       ThesisNote[]
+  feedback    ThesisFeedback[]
 
   @@index([ticker, extractedAt])
 }
@@ -123,4 +125,35 @@ model ThesisNote {
   thesis    Thesis   @relation(fields: [thesisId], references: [id], onDelete: Cascade)
 
   @@unique([userId, thesisId])
+}
+
+// Thumbs up/down on an individual thesis — "good extraction" vs "bad
+// extraction". A dataset for eventually tightening the extraction prompt,
+// not shown to other users.
+model ThesisFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  thesisId  String
+  vote      String   // "good" | "bad"
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thesis    Thesis   @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, thesisId])
+}
+
+// One row per worker run — lets the quota page show real history (requests
+// used, theses produced, why it stopped) instead of guessing from logs the
+// web app can't read (the worker runs as a separate Python process).
+model WorkerRun {
+  id               String    @id @default(cuid())
+  startedAt        DateTime  @default(now())
+  finishedAt       DateTime?
+  postsIngested    Int       @default(0)
+  candidatesQueued Int       @default(0)
+  thesesExtracted  Int       @default(0)
+  requestsUsed     Int       @default(0)
+  stoppedReason    String? // "completed" | "rate_limited" | null while still running
+
+  @@index([startedAt])
 }

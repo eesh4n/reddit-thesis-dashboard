@@ -63,6 +63,40 @@ export async function getUserNotes(userId: string, thesisIds: string[]): Promise
     return Object.fromEntries(rows.map((r) => [r.thesisId, r.note]));
 }
 
+// This user's own thumbs up/down on a set of theses, keyed by thesisId —
+// used to pre-populate the feedback buttons.
+export async function getUserFeedback(userId: string, thesisIds: string[]): Promise<Record<string, "good" | "bad">> {
+    if (thesisIds.length === 0) return {};
+    const rows = await prisma.thesisFeedback.findMany({
+        where: { userId, thesisId: { in: thesisIds } },
+    });
+    return Object.fromEntries(rows.map((r) => [r.thesisId, r.vote as "good" | "bad"]));
+}
+
+// Most recent worker runs, newest first — the quota dashboard's run history.
+export async function getRecentWorkerRuns(limit = 14) {
+    return prisma.workerRun.findMany({
+        orderBy: { startedAt: "desc" },
+        take: limit,
+    });
+}
+
+// Sum of today's runs (there can be more than one if the task fires more
+// than once, e.g. a missed-then-caught-up run). "Requests used" is the
+// number that actually matters — that's what the free tier gates, not
+// theses count or tokens.
+export async function getTodayRunStats() {
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    const runs = await prisma.workerRun.findMany({ where: { startedAt: { gte: since } } });
+    return {
+        requestsUsed: runs.reduce((sum, r) => sum + r.requestsUsed, 0),
+        thesesExtracted: runs.reduce((sum, r) => sum + r.thesesExtracted, 0),
+        postsIngested: runs.reduce((sum, r) => sum + r.postsIngested, 0),
+        runsCount: runs.length,
+    };
+}
+
 // Daily bull/bear/neutral counts for one ticker over the last N days —
 // feeds the sentiment trend sparkline on the ticker detail page.
 export async function getDailySentiment(ticker: string, days = 14) {

@@ -9,9 +9,16 @@ import time
 import db
 
 MODEL = "gemini-2.5-flash-lite"  # higher free-tier limits than full flash; ample for extraction
-BATCH_SIZE = 10         # posts per Gemini request (fewer requests = fewer rate limits)
+# The free tier caps REQUESTS (per-minute and per-day), not tokens — a request
+# with 25 posts costs the same 1-request quota as a request with 1 post.
+# gemini-2.5-flash-lite's context window is ~1M tokens, so a 25-post batch
+# (well under 100K chars) is nowhere near the ceiling. Packing more posts per
+# request is the single biggest lever for maximizing theses extracted per day
+# against a fixed request budget — this was raised from 10 to 25 for exactly
+# that reason (roughly 2.5x more posts processed per day for the same quota).
+BATCH_SIZE = 25
 MAX_CHARS = 2000        # cap per-post text so batches stay small
-THROTTLE_SECONDS = 5    # ~12 requests/minute, safely under the 20/min free-tier cap
+THROTTLE_SECONDS = 4    # 25 posts/request * 15 req/min ≈ 375 posts/min, still under the 20/min request cap
 RATE_LIMIT_WAIT = 30    # seconds to wait out a 429 before retrying the same batch
 MAX_RETRIES = 6         # give up on a batch only after this many rate-limited attempts
 MIN_CONFIDENCE = 0.6    # drop trade recaps / unsupported opinions the prompt scores low
@@ -41,6 +48,7 @@ def _valid(t: dict) -> bool:
     try:
         return (
             isinstance(t.get("ticker"), str) and t["ticker"]
+            and isinstance(t.get("summary"), str) and t["summary"]
             and t.get("sentiment") in ("bullish", "bearish", "neutral")
             and 0.0 <= float(t.get("confidence", -1)) <= 1.0
         )
@@ -100,7 +108,9 @@ def extract_batch(posts: list[dict], llm_client) -> dict[int, list[dict]]:
     return out
 
 
-def run_extraction(llm_client):
+def run_extraction(llm_client) -> dict:
+    """Returns stats for the WorkerRun record: candidates_queued, theses_extracted,
+    requests_used, stopped_reason ("completed" | "rate_limited")."""
     posts = db.get_unextracted_posts()
 
     # Step 1: pre-filter. Posts with no ticker-like text never reach the API.
@@ -116,6 +126,7 @@ def run_extraction(llm_client):
 
     # Step 2: batch through the API, throttled.
     inserted = 0
+    requests_used = 0
     for start in range(0, len(candidates), BATCH_SIZE):
         batch = candidates[start:start + BATCH_SIZE]
         payload = [{"index": i, "text": b["text"][:MAX_CHARS]} for i, b in enumerate(batch)]
@@ -124,6 +135,7 @@ def run_extraction(llm_client):
         malformed = False
         for attempt in range(MAX_RETRIES):
             try:
+                requests_used += 1
                 results = extract_batch(payload, llm_client)
                 break
             except Exception as e:
@@ -142,15 +154,37 @@ def run_extraction(llm_client):
             continue  # this batch is logged as failed; move to the next one
         if results is None:
             print("  Still rate limited after retries — stopping; remaining posts retry next run.")
-            return
+            return {
+                "candidates_queued": len(candidates),
+                "theses_extracted": inserted,
+                "requests_used": requests_used,
+                "stopped_reason": "rate_limited",
+            }
 
         for i, b in enumerate(batch):
             theses = results.get(i, [])
             for t in theses:
-                db.insert_thesis(b["id"], t["ticker"], t["summary"], t.get("reasoning", ""), t["sentiment"], float(t["confidence"]))
-                inserted += 1
+                try:
+                    # _valid() already checked these keys exist, but defensive
+                    # .get() here means a single malformed thesis object can
+                    # never take down the whole run again — it did once, when
+                    # ticker was accessed directly and one response omitted it.
+                    db.insert_thesis(
+                        b["id"], t.get("ticker", ""), t.get("summary", ""), t.get("reasoning", ""),
+                        t.get("sentiment", "neutral"), float(t.get("confidence", 0.0)),
+                    )
+                    inserted += 1
+                except Exception as e:
+                    print(f"  Skipping malformed thesis for post {b['id']}: {e}")
             if not theses:
                 db.insert_failed_extraction(b["id"], "no_tickers_found")
 
         print(f"  Processed {min(start + BATCH_SIZE, len(candidates))}/{len(candidates)} — {inserted} theses so far.")
         time.sleep(THROTTLE_SECONDS)
+
+    return {
+        "candidates_queued": len(candidates),
+        "theses_extracted": inserted,
+        "requests_used": requests_used,
+        "stopped_reason": "completed",
+    }

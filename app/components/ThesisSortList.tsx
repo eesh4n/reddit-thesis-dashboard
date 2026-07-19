@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ExternalLink, ArrowUpDown, Calendar, Hash } from "lucide-react";
 import { formatPostDate } from "@/lib/formatDate";
 import NoteEditor from "./NoteEditor";
+import FeedbackButtons from "./FeedbackButtons";
 
 export type DetailThesis = {
   id: string;
@@ -17,6 +18,7 @@ export type DetailThesis = {
   subreddit: string;
   author: string; // source post's Reddit username — feeds duplicate-author consensus dedup
   note: string; // this user's own annotation, "" if none saved yet
+  vote: "good" | "bad" | null; // this user's extraction-quality feedback
 };
 
 const dotColor = { bullish: "bg-bull", bearish: "bg-bear", neutral: "bg-mute" } as const;
@@ -160,6 +162,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
               </span>
               <span className="text-[11px] text-faint">·</span>
               <span className="text-[11px] text-faint">r/{t.subreddit}</span>
+              <FeedbackButtons thesisId={t.id} initialVote={t.vote} />
             </div>
             <p className="mb-1.5 text-[14.5px] font-medium leading-snug">{t.summary}</p>
             <p className="text-[13px] leading-relaxed text-mute">{t.reasoning}</p>

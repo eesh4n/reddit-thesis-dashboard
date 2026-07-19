@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award, Loader } from "lucide-react";
+import Link from "next/link";
+import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award, Loader, Gauge } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 
@@ -76,11 +77,22 @@ export default function Sidebar({
           Live feed · {thesisCount} theses
         </div>
         {backlogCount > 0 && (
-          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-faint" title="Posts scraped but not yet analyzed by the AI — limited by the free-tier daily quota, catches up over the following days">
+          <Link
+            href="/quota"
+            className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-[11px] text-faint transition-colors duration-150 hover:text-fg"
+            title="Posts scraped but not yet analyzed by the AI — limited by the free-tier daily quota, catches up over the following days. Click for extraction quota details."
+          >
             <Loader size={11} className="shrink-0" />
             {backlogCount.toLocaleString()} posts waiting to be analyzed
-          </div>
+          </Link>
         )}
+        <Link
+          href="/quota"
+          className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-[11px] text-faint transition-colors duration-150 hover:text-fg"
+        >
+          <Gauge size={11} className="shrink-0" />
+          Extraction quota
+        </Link>
         <Clock />
 
         {email && (

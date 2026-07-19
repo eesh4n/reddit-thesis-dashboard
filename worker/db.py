@@ -79,3 +79,32 @@ def insert_failed_extraction(raw_post_id: str, error: str):
             (raw_post_id, error),
         )
         conn.commit()
+
+def start_worker_run() -> str:
+    """Call at the top of run_daily.py. Returns the run id to pass to finish_worker_run."""
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO "WorkerRun" (id, "startedAt")
+            VALUES (gen_random_uuid()::text, now())
+            RETURNING id
+            """
+        )
+        run_id = cur.fetchone()[0]
+        conn.commit()
+        return run_id
+
+def finish_worker_run(run_id: str, posts_ingested: int, candidates_queued: int, theses_extracted: int, requests_used: int, stopped_reason: str):
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE "WorkerRun"
+            SET "finishedAt" = now(), "postsIngested" = %s, "candidatesQueued" = %s,
+                "thesesExtracted" = %s, "requestsUsed" = %s, "stoppedReason" = %s
+            WHERE id = %s
+            """,
+            (posts_ingested, candidates_queued, theses_extracted, requests_used, stopped_reason, run_id),
+        )
+        conn.commit()
