@@ -11,7 +11,7 @@ export default function TrendingRow({
 }: {
   agg: TickerAgg;
   rank: number;
-  onWatch?: () => void;
+  onWatch: () => void;
 }) {
   const net = agg.bull - agg.bear;
   return (
@@ -37,14 +37,12 @@ export default function TrendingRow({
         {agg.theses.length} {agg.theses.length === 1 ? "thesis" : "theses"} · {net >= 0 ? "+" : ""}
         {net}
       </span>
-      {onWatch && (
-        <button
-          onClick={onWatch}
-          className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors duration-150 hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-        >
-          <Bookmark size={12} /> Watch
-        </button>
-      )}
+      <button
+        onClick={onWatch}
+        className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors duration-150 hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+      >
+        <Bookmark size={12} /> Watch
+      </button>
     </div>
   );
 }
