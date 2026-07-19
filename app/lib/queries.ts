@@ -9,7 +9,7 @@ export async function getAllTheses(days = 30) {
     return prisma.thesis.findMany({
         where: { extractedAt: { gte: since } },
         orderBy: { extractedAt: "desc"}, // sort by extractedAt timestamp, desc returns newest (descending)
-        include: { rawPost: { select: {permalink: true, postedAt: true }}}, // include pulls in a related table (Thesis -> rawPost); postedAt is when the Reddit post itself went up, not when we scraped it
+        include: { rawPost: { select: {permalink: true, postedAt: true, author: true }}}, // include pulls in a related table (Thesis -> rawPost); postedAt is when the Reddit post itself went up, not when we scraped it; author feeds duplicate-author consensus dedup
 
 
     })
@@ -41,6 +41,26 @@ export async function getThesesForTicker(ticker: string) {
         orderBy: { extractedAt: "desc" },
         include: { rawPost: { select: { permalink: true, subreddit: true, author: true, postedAt: true } } },
     });
+}
+
+// How many scraped posts are still waiting on the worker's extraction pass —
+// mirrors the worker's own get_unextracted_posts() JOIN. The free-tier Gemini
+// quota means this rarely hits zero; surfacing the number keeps that honest
+// instead of the dashboard silently looking "caught up" when it isn't.
+export async function getBacklogCount(): Promise<number> {
+    return prisma.rawPost.count({
+        where: { theses: { none: {} }, failures: { none: {} } },
+    });
+}
+
+// This user's own notes on a set of theses, keyed by thesisId — used to
+// pre-populate the note editor on the ticker detail page.
+export async function getUserNotes(userId: string, thesisIds: string[]): Promise<Record<string, string>> {
+    if (thesisIds.length === 0) return {};
+    const rows = await prisma.thesisNote.findMany({
+        where: { userId, thesisId: { in: thesisIds } },
+    });
+    return Object.fromEntries(rows.map((r) => [r.thesisId, r.note]));
 }
 
 // Daily bull/bear/neutral counts for one ticker over the last N days —

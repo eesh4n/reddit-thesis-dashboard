@@ -25,11 +25,11 @@ def insert_raw_post(post: dict) -> bool:
     with conn.cursor() as cur:
         cur.execute(
             """
-            INSERT INTO "RawPost" (id, "redditId", subreddit, author, permalink, text, "postedAt")
-            VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s)
+            INSERT INTO "RawPost" (id, "redditId", subreddit, author, permalink, text, score, "postedAt")
+            VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT ("redditId") DO NOTHING
             """,
-            (post["redditId"], post["subreddit"], post["author"], post["permalink"], post["text"], post["postedAt"]),
+            (post["redditId"], post["subreddit"], post["author"], post["permalink"], post["text"], post.get("score", 0), post["postedAt"]),
         )
         inserted = cur.rowcount == 1
         conn.commit()
@@ -44,10 +44,13 @@ def get_unextracted_posts() -> list[dict]:
             LEFT JOIN "Thesis" t ON t."rawPostId" = rp.id
             LEFT JOIN "FailedExtraction" fe ON fe."rawPostId" = rp.id
             WHERE t.id IS NULL AND fe.id IS NULL
+            ORDER BY rp.score DESC
             """
 
             # for every raw post, it checks if there is a matching row in Thesis or FailedExtraction
             # only returns posts where the thesis and failed extraction do not exist. this means the post still needs to be processed by the LLM.
+            # ORDER BY score DESC: the free-tier extraction quota never covers the full daily backlog,
+            # so process the posts more people actually upvoted/noticed first instead of scrape order.
         )
         return cur.fetchall()
 

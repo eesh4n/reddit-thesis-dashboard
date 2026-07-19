@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getAllTheses, getTopConvictionToday } from "@/lib/queries";
+import { getAllTheses, getTopConvictionToday, getBacklogCount } from "@/lib/queries";
 import { getDigest } from "@/lib/digest";
 import Sidebar from "@/components/Sidebar";
 import SentimentMeter from "@/components/SentimentMeter";
@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic"; // always read fresh from the db
 
 export default async function Home() {
   const session = await auth(); // middleware already guarantees this exists here
-  const [rows, digest, convictionResult] = await Promise.all([
+  const [rows, digest, convictionResult, backlogCount] = await Promise.all([
     getAllTheses(),
     getDigest(),
     getTopConvictionToday(),
+    getBacklogCount(),
   ]);
   const { rows: convictionRows, windowHours: convictionWindowHours } = convictionResult;
 
@@ -40,6 +41,7 @@ export default async function Home() {
     confidence: r.confidence,
     permalink: r.rawPost.permalink,
     postedAt: r.rawPost.postedAt.toISOString(),
+    author: r.rawPost.author,
   }));
 
   const aggs = [...aggregateByTicker(theses).values()];
@@ -56,7 +58,12 @@ export default async function Home() {
 
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
-      <Sidebar thesisCount={theses.length} email={session?.user?.email} knownTickers={aggs.map((a) => a.ticker)} />
+      <Sidebar
+        thesisCount={theses.length}
+        email={session?.user?.email}
+        knownTickers={aggs.map((a) => a.ticker)}
+        backlogCount={backlogCount}
+      />
 
       <main className="mx-auto w-full max-w-[1600px] pb-20">
         {/* ── Briefing header — big bold number is the hero moment ── */}

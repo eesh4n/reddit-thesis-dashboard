@@ -14,6 +14,7 @@ def test_fetch_new_posts_maps_json_fields():
                 "selftext": "Here's my thesis...",
                 "author": "trader_joe",
                 "permalink": "/r/stocks/comments/abc123/aapl_is_undervalued/",
+                "score": 342,
                 "created_utc": 1700000000.0,
             }
         ]
@@ -42,8 +43,31 @@ def test_fetch_new_posts_maps_json_fields():
     assert post["subreddit"] == "stocks"
     assert post["author"] == "trader_joe"
     assert post["permalink"] == "https://reddit.com/r/stocks/comments/abc123/aapl_is_undervalued/"
+    assert post["score"] == 342
     # title and body should be combined into one text field
     assert "AAPL is undervalued" in post["text"]
     assert "Here's my thesis..." in post["text"]
     # Unix timestamp should become a proper timezone-aware datetime
     assert post["postedAt"] == datetime.fromtimestamp(1700000000.0, tz=timezone.utc)
+
+def test_fetch_new_posts_defaults_missing_score_to_zero():
+    fake_listing = {
+        "data": [
+            {
+                "name": "t3_xyz789",
+                "title": "no score field here",
+                "selftext": "",
+                "author": "nobody",
+                "permalink": "/r/stocks/comments/xyz789/no_score/",
+                "created_utc": 1700000000.0,
+                # no "score" key at all
+            }
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.json.return_value = fake_listing
+
+    with patch("reddit_ingest.requests.get", return_value=mock_response):
+        result = fetch_new_posts("stocks", limit=10)
+
+    assert result[0]["score"] == 0

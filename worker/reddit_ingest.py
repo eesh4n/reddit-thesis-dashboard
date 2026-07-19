@@ -26,6 +26,7 @@ def fetch_new_posts(subreddit_name: str, limit: int = 100) -> list[dict]:
             "author": post.get("author") or "[deleted]",
             "permalink": f"https://reddit.com{post['permalink']}",
             "text": text,
+            "score": post.get("score") or 0,  # upvotes at scrape time — drives extraction priority
             "postedAt": datetime.fromtimestamp(post["created_utc"], tz=timezone.utc),
         })
 

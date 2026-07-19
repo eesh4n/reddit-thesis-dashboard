@@ -16,6 +16,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   portfolios    Portfolio[]
+  notes         ThesisNote[]
 }
 
 model Account {
@@ -78,22 +79,26 @@ model RawPost {
   author      String
   permalink   String
   text        String
+  score       Int                @default(0) // Reddit upvote count at scrape time — drives extraction priority
   postedAt    DateTime
   fetchedAt   DateTime           @default(now())
   theses      Thesis[]
   failures    FailedExtraction[]
+
+  @@index([score])
 }
 
 model Thesis {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   rawPostId   String
   ticker      String
   summary     String
-  reasoning   String   @default("")
+  reasoning   String       @default("")
   sentiment   String
   confidence  Float
-  extractedAt DateTime @default(now())
-  rawPost     RawPost  @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+  extractedAt DateTime     @default(now())
+  rawPost     RawPost      @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+  notes       ThesisNote[]
 
   @@index([ticker, extractedAt])
 }
@@ -104,4 +109,18 @@ model FailedExtraction {
   error       String
   attemptedAt DateTime @default(now())
   rawPost     RawPost  @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+}
+
+// A user's own take on a thesis — "agree, already long" / "skip, low conviction".
+// Personal, private annotation; one per (user, thesis).
+model ThesisNote {
+  id        String   @id @default(cuid())
+  userId    String
+  thesisId  String
+  note      String
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thesis    Thesis   @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, thesisId])
 }

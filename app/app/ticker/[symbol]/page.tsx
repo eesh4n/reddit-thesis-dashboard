@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
-import { getThesesForTicker, getDailySentiment } from "@/lib/queries";
+import { auth } from "@/lib/auth";
+import { getThesesForTicker, getDailySentiment, getUserNotes } from "@/lib/queries";
 import { getPriceInfo } from "@/lib/price";
-import { computeConsensus } from "@/lib/view";
+import { computeConsensusFromTheses } from "@/lib/view";
 import SentimentMeter from "@/components/SentimentMeter";
 import Sparkline from "@/components/Sparkline";
 import ThesisSortList, { type DetailThesis } from "@/components/ThesisSortList";
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function TickerDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol } = await params;
   const ticker = symbol.toUpperCase();
+  const session = await auth(); // middleware already guarantees this exists here
   const [rows, trend, price] = await Promise.all([
     getThesesForTicker(ticker),
     getDailySentiment(ticker, 14),
@@ -20,6 +22,8 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
   ]);
 
   if (rows.length === 0) notFound();
+
+  const notes = await getUserNotes(session!.user.id, rows.map((r) => r.id));
 
   const theses: DetailThesis[] = rows.map((r) => ({
     id: r.id,
@@ -31,13 +35,15 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
     postedAt: r.rawPost.postedAt.toISOString(),
     permalink: r.rawPost.permalink,
     subreddit: r.rawPost.subreddit,
+    author: r.rawPost.author,
+    note: notes[r.id] ?? "",
   }));
 
   const bull = theses.filter((t) => t.sentiment === "bullish").length;
   const bear = theses.filter((t) => t.sentiment === "bearish").length;
   const neutral = theses.length - bull - bear;
 
-  const consensus = computeConsensus(bull, bear);
+  const consensus = computeConsensusFromTheses(theses);
 
   return (
     <div className="mx-auto max-w-3xl px-6 pb-20 pt-9 md:px-11">

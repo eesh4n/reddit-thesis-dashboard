@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ExternalLink, ArrowUpDown, Calendar, Hash } from "lucide-react";
 import { formatPostDate } from "@/lib/formatDate";
+import NoteEditor from "./NoteEditor";
 
 export type DetailThesis = {
   id: string;
@@ -14,6 +15,8 @@ export type DetailThesis = {
   postedAt: string; // ISO — when the Reddit post itself went up (shown on the card)
   permalink: string;
   subreddit: string;
+  author: string; // source post's Reddit username — feeds duplicate-author consensus dedup
+  note: string; // this user's own annotation, "" if none saved yet
 };
 
 const dotColor = { bullish: "bg-bull", bearish: "bg-bear", neutral: "bg-mute" } as const;
@@ -168,6 +171,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
             >
               view source post <ExternalLink size={11} />
             </a>
+            <NoteEditor thesisId={t.id} initialNote={t.note} />
           </article>
         ))}
         {sorted.length === 0 && (

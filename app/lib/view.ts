@@ -10,6 +10,7 @@ export type ThesisView = {
   confidence: number; // 0..1
   permalink: string;
   postedAt: string; // ISO — when the Reddit post itself went up
+  author: string; // Reddit username of the source post — used to dedupe consensus
 };
 
 export type TickerAgg = {
@@ -18,10 +19,10 @@ export type TickerAgg = {
   bear: number;
   neutral: number;
   theses: ThesisView[];
-  consensus: "bullish" | "bearish" | null; // 3+ independent posts agreeing, one side dominant
+  consensus: "bullish" | "bearish" | null; // 3+ independent AUTHORS agreeing, one side dominant
 };
 
-const CONSENSUS_MIN_COUNT = 3; // at least this many posts on the dominant side
+const CONSENSUS_MIN_COUNT = 3; // at least this many independent authors on the dominant side
 const CONSENSUS_MIN_RATIO = 2; // and that side must outnumber the other by this much
 
 // Exported so every place that decides "does this ticker have consensus"
@@ -34,10 +35,22 @@ export function computeConsensus(bull: number, bear: number): "bullish" | "beari
   return null;
 }
 
+// Consensus should mean "independent people agree," not "one person posted
+// the same take five times across five subreddits." Dedupe by author within
+// each sentiment side before applying the threshold — a prolific poster no
+// longer manufactures a false consensus signal on their own.
+export function computeConsensusFromTheses(
+  theses: { sentiment: "bullish" | "bearish" | "neutral"; author: string }[],
+): "bullish" | "bearish" | null {
+  const bullAuthors = new Set(theses.filter((t) => t.sentiment === "bullish").map((t) => t.author));
+  const bearAuthors = new Set(theses.filter((t) => t.sentiment === "bearish").map((t) => t.author));
+  return computeConsensus(bullAuthors.size, bearAuthors.size);
+}
+
 // Groups theses by ticker and counts sentiment — display shaping for the meter.
-// Also flags "consensus": independent posts (different raw posts) agreeing
-// strongly enough on direction that it's worth calling out — this is the
-// cross-reference signal, not just a single loud post.
+// bull/bear/neutral stay raw thesis counts (a genuine "how much discussion"
+// signal); consensus is computed separately with author-dedup applied so a
+// single loud poster can't manufacture it.
 export function aggregateByTicker(theses: ThesisView[]): Map<string, TickerAgg> {
   const map = new Map<string, Omit<TickerAgg, "consensus">>();
   for (const t of theses) {
@@ -50,7 +63,7 @@ export function aggregateByTicker(theses: ThesisView[]): Map<string, TickerAgg> 
   }
   const out = new Map<string, TickerAgg>();
   for (const [ticker, agg] of map) {
-    out.set(ticker, { ...agg, consensus: computeConsensus(agg.bull, agg.bear) });
+    out.set(ticker, { ...agg, consensus: computeConsensusFromTheses(agg.theses) });
   }
   return out;
 }

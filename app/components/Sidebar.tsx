@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award, Loader } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 
@@ -36,10 +36,12 @@ export default function Sidebar({
   thesisCount,
   email,
   knownTickers,
+  backlogCount,
 }: {
   thesisCount: number;
   email?: string | null;
   knownTickers: string[];
+  backlogCount: number;
 }) {
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-6 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
@@ -73,6 +75,12 @@ export default function Sidebar({
           <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-bull shadow-[0_0_8px_var(--color-bull)]" />
           Live feed · {thesisCount} theses
         </div>
+        {backlogCount > 0 && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-faint" title="Posts scraped but not yet analyzed by the AI — limited by the free-tier daily quota, catches up over the following days">
+            <Loader size={11} className="shrink-0" />
+            {backlogCount.toLocaleString()} posts waiting to be analyzed
+          </div>
+        )}
         <Clock />
 
         {email && (
