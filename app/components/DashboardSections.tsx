@@ -17,6 +17,21 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
   const agg = (ticker: string): TickerAgg =>
     byTicker.get(ticker) ?? { ticker, bull: 0, bear: 0, neutral: 0, theses: [], consensus: null };
 
+  // Early warning for stocks you own: 2+ bearish theses posted in the last
+  // 24h and bears outnumbering bulls in that window. Recency is the point —
+  // the overall meter can still look fine while today's posts turn negative.
+  function bearishAlert(a: TickerAgg): boolean {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    let bull = 0;
+    let bear = 0;
+    for (const t of a.theses) {
+      if (new Date(t.postedAt).getTime() < cutoff) continue;
+      if (t.sentiment === "bullish") bull++;
+      else if (t.sentiment === "bearish") bear++;
+    }
+    return bear >= 2 && bear > bull;
+  }
+
   const trending = aggs
     .filter((a) => !holdings.tickers.includes(a.ticker) && !watchlist.tickers.includes(a.ticker))
     .sort((a, b) => b.theses.length - a.theses.length)
@@ -38,7 +53,7 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
             {holdings.tickers.map((t) => (
-              <TickerCard key={t} agg={agg(t)} onRemove={() => holdings.remove(t)} />
+              <TickerCard key={t} agg={agg(t)} onRemove={() => holdings.remove(t)} alert={bearishAlert(agg(t))} />
             ))}
           </div>
         )}

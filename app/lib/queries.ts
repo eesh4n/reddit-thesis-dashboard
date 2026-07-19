@@ -16,6 +16,24 @@ export async function getAllTheses(days = 30) {
 
 };
 
+// Highest-confidence theses — the "start your morning here" list. Prefers
+// the last 24h; if the scraper had a quiet day (or the extraction quota
+// stalled), widens to 72h instead of showing nothing. Returns the window it
+// used so the UI can label itself honestly.
+export async function getTopConvictionToday(limit = 6, minConfidence = 0.85) {
+    for (const hours of [24, 72]) {
+        const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+        const rows = await prisma.thesis.findMany({
+            where: { extractedAt: { gte: since }, confidence: { gte: minConfidence } },
+            orderBy: [{ confidence: "desc" }, { extractedAt: "desc" }],
+            take: limit,
+            include: { rawPost: { select: { permalink: true, subreddit: true, postedAt: true } } },
+        });
+        if (rows.length > 0) return { rows, windowHours: hours };
+    }
+    return { rows: [], windowHours: 24 };
+}
+
 // All theses for one ticker, newest first — used by the ticker detail page.
 export async function getThesesForTicker(ticker: string) {
     return prisma.thesis.findMany({

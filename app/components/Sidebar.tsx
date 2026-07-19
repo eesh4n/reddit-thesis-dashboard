@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase, Flame, Bookmark, LogOut, Sparkles } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 
@@ -26,6 +26,7 @@ function Clock() {
 
 const links = [
   { href: "#digest", label: "What Changed", icon: Sparkles },
+  { href: "#conviction", label: "Top Conviction", icon: Award },
   { href: "#holdings", label: "Your Holdings", icon: Briefcase },
   { href: "#trending", label: "Trending Ideas", icon: Flame },
   { href: "#watchlist", label: "Watchlist", icon: Bookmark },

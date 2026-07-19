@@ -1,17 +1,34 @@
 import { auth } from "@/lib/auth";
-import { getAllTheses } from "@/lib/queries";
+import { getAllTheses, getTopConvictionToday } from "@/lib/queries";
 import { getDigest } from "@/lib/digest";
 import Sidebar from "@/components/Sidebar";
 import SentimentMeter from "@/components/SentimentMeter";
 import DashboardSections from "@/components/DashboardSections";
 import DigestPanel from "@/components/DigestPanel";
+import TopConviction, { type ConvictionThesis } from "@/components/TopConviction";
 import { aggregateByTicker, type ThesisView } from "@/lib/view";
 
 export const dynamic = "force-dynamic"; // always read fresh from the db
 
 export default async function Home() {
   const session = await auth(); // middleware already guarantees this exists here
-  const [rows, digest] = await Promise.all([getAllTheses(), getDigest()]);
+  const [rows, digest, convictionResult] = await Promise.all([
+    getAllTheses(),
+    getDigest(),
+    getTopConvictionToday(),
+  ]);
+  const { rows: convictionRows, windowHours: convictionWindowHours } = convictionResult;
+
+  const conviction: ConvictionThesis[] = convictionRows.map((r) => ({
+    id: r.id,
+    ticker: r.ticker,
+    summary: r.summary,
+    reasoning: r.reasoning,
+    sentiment: r.sentiment as ConvictionThesis["sentiment"],
+    confidence: r.confidence,
+    permalink: r.rawPost.permalink,
+    subreddit: r.rawPost.subreddit,
+  }));
 
   // Map DB rows to the UI shape (flatten rawPost.permalink, narrow sentiment).
   const theses: ThesisView[] = rows.map((r) => ({
@@ -64,6 +81,9 @@ export default async function Home() {
 
         {/* "What changed since yesterday" — the actual morning-briefing payoff */}
         <DigestPanel digest={digest} />
+
+        {/* Strongest ideas of the last day (or longer, on a quiet news day), regardless of ticker */}
+        <TopConviction theses={conviction} windowHours={convictionWindowHours} />
 
         {/* Interactive sections (holdings / trending / watchlist) — client-side,
             holdings & watchlist are per-user rows in Postgres. */}

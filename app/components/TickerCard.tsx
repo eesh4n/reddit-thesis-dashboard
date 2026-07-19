@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ExternalLink, X, ArrowUpRight, Users, Calendar } from "lucide-react";
+import { ExternalLink, X, ArrowUpRight, Users, Calendar, TriangleAlert } from "lucide-react";
 import SentimentMeter from "./SentimentMeter";
 import type { TickerAgg } from "@/lib/view";
 import { formatPostDate } from "@/lib/formatDate";
@@ -17,7 +17,17 @@ const dotColor = {
 // because it contains a real <a> for the Reddit source — nesting an <a>
 // inside an <a> is invalid HTML and breaks hydration. role="link" + tabIndex
 // + onKeyDown keep it keyboard-accessible despite not being a native anchor.
-export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove: () => void }) {
+// `alert` marks a recent bearish turn (computed by the parent from the last
+// 24h of theses) — shown as a warning chip so it stands out on a morning skim.
+export default function TickerCard({
+  agg,
+  onRemove,
+  alert = false,
+}: {
+  agg: TickerAgg;
+  onRemove: () => void;
+  alert?: boolean;
+}) {
   const router = useRouter();
   const net = agg.bull - agg.bear;
   const lean =
@@ -55,6 +65,14 @@ export default function TickerCard({ agg, onRemove }: { agg: TickerAgg; onRemove
             className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${agg.consensus === "bullish" ? "bg-bull-dim text-bull" : "bg-bear-dim text-bear"}`}
           >
             <Users size={9} /> consensus
+          </span>
+        )}
+        {alert && (
+          <span
+            title="2+ bearish theses in the last 24 hours"
+            className="inline-flex items-center gap-1 rounded-md bg-bear px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#2a0808]"
+          >
+            <TriangleAlert size={10} /> bearish 24h
           </span>
         )}
         <ArrowUpRight
