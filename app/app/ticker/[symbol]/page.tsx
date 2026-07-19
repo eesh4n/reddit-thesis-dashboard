@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function TickerDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol } = await params;
   const ticker = symbol.toUpperCase();
-  const session = await auth(); // middleware already guarantees this exists here
+  const session = await auth(); // sign-in gate is disabled for now, so this may be null
   const [rows, trend, price, priceHistory, related] = await Promise.all([
     getThesesForTicker(ticker),
     getDailySentiment(ticker, 14),
@@ -27,10 +27,13 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
 
   if (rows.length === 0) notFound();
 
-  const [notes, feedback] = await Promise.all([
-    getUserNotes(session!.user.id, rows.map((r) => r.id)),
-    getUserFeedback(session!.user.id, rows.map((r) => r.id)),
-  ]);
+  const userId = session?.user?.id;
+  const [notes, feedback] = userId
+    ? await Promise.all([
+        getUserNotes(userId, rows.map((r) => r.id)),
+        getUserFeedback(userId, rows.map((r) => r.id)),
+      ])
+    : [{}, {}];
 
   const theses: DetailThesis[] = rows.map((r) => ({
     id: r.id,

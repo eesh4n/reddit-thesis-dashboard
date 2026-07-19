@@ -5,15 +5,12 @@ import authConfig from "@/lib/auth.config";
 // Uses the Edge-safe config (no Prisma/bcrypt) — see lib/auth.config.ts.
 const { auth } = NextAuth(authConfig);
 
+// Sign-in gate is disabled for now — every page is publicly viewable.
+// Re-enable by restoring the redirect-to-/login block below.
 export default auth((req) => {
   const isAuthPage = req.nextUrl.pathname === "/login" || req.nextUrl.pathname === "/signup";
   const isSignedIn = !!req.auth;
 
-  if (!isSignedIn && !isAuthPage) {
-    const loginUrl = new URL("/login", req.nextUrl.origin);
-    loginUrl.searchParams.set("from", req.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
   if (isSignedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
