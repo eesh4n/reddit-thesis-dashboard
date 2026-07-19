@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award, Loader, Gauge } from "lucide-react";
+import { Flame, LogOut, Sparkles, Award, Loader, Gauge } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 
@@ -25,12 +25,12 @@ function Clock() {
   );
 }
 
+// Holdings and Watchlist nav links are dropped while sign-in is disabled —
+// see DashboardSections.tsx.
 const links = [
   { href: "#digest", label: "What Changed", icon: Sparkles },
   { href: "#conviction", label: "Top Conviction", icon: Award },
-  { href: "#holdings", label: "Your Holdings", icon: Briefcase },
   { href: "#trending", label: "Trending Ideas", icon: Flame },
-  { href: "#watchlist", label: "Watchlist", icon: Bookmark },
 ];
 
 export default function Sidebar({
