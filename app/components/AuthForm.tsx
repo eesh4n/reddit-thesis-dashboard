@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { LogIn, UserPlus, AlertCircle } from "lucide-react";
+import { LogIn, UserPlus, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
@@ -20,6 +20,20 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [guestPending, setGuestPending] = useState(false);
+
+  async function handleGuest() {
+    setError(null);
+    setGuestPending(true);
+    try {
+      await fetch("/api/guest", { method: "POST" });
+      router.push(from);
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Try again.");
+      setGuestPending(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -122,6 +136,29 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
               {pending ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
             </button>
           </form>
+
+          {isLogin && (
+            <>
+              <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.14em] text-faint">
+                <span className="h-px flex-1 bg-edge-soft" />
+                or
+                <span className="h-px flex-1 bg-edge-soft" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGuest}
+                disabled={guestPending}
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-edge bg-panel-2 px-4 py-2.5 text-[13.5px] font-semibold text-mute transition-colors duration-150 hover:border-gold hover:text-gold disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ArrowRight size={15} />
+                {guestPending ? "Please wait…" : "Continue as guest"}
+              </button>
+              <p className="mt-2.5 text-center text-[11.5px] text-faint">
+                No account — holdings and watchlist stay on this device only.
+              </p>
+            </>
+          )}
         </div>
 
         <p className="mt-5 text-center text-[13px] text-mute">
