@@ -8,3 +8,4 @@ __pycache__/
 *.pyc
 .prisma/
 worker/daily_run.log
+.claude/
