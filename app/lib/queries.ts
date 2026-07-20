@@ -35,10 +35,14 @@ export async function getTopConvictionToday(limit = 6, minConfidence = 0.85) {
 }
 
 // All theses for one ticker, newest first — used by the ticker detail page.
+// "Newest" is by the Reddit post's own postedAt, not extractedAt: batched,
+// priority-ordered extraction can analyze a days-old post today, so sorting
+// by scrape time instead of post time made the displayed dates (which show
+// postedAt) look out of order.
 export async function getThesesForTicker(ticker: string) {
     return prisma.thesis.findMany({
         where: { ticker: ticker.toUpperCase() },
-        orderBy: { extractedAt: "desc" },
+        orderBy: { rawPost: { postedAt: "desc" } },
         include: { rawPost: { select: { permalink: true, subreddit: true, author: true, postedAt: true } } },
     });
 }
