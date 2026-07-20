@@ -13,7 +13,7 @@ export default function TrendingRow({
   rank: number;
   onWatch: () => void;
 }) {
-  const net = agg.bull - agg.bear;
+  const net = Math.round(agg.bull - agg.bear); // bull/bear are age-weighted, so round for a clean "+2" readout
   return (
     <div className="flex items-center gap-4 bg-panel px-5 py-4 transition-colors duration-150 hover:bg-panel-2">
       <span className="w-6 font-mono text-xs font-bold text-faint">{String(rank).padStart(2, "0")}</span>

@@ -11,14 +11,18 @@ export default auth((req) => {
   // guest" on the login page) counts as signed in for gating purposes —
   // middleware runs on the Edge and can't touch Prisma, so this only checks
   // the cookie is present, not that it resolves to a real row.
-  const isSignedIn = !!req.auth || req.cookies.has("guestId");
+  const hasGuestCookie = req.cookies.has("guestId");
+  const isSignedIn = !!req.auth || hasGuestCookie;
 
   if (!isSignedIn && !isAuthPage) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("from", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
-  if (isSignedIn && isAuthPage) {
+  // A real session on /login or /signup is redirected home — no reason to
+  // see the form again. A guest-only visitor stays put: guests have no way
+  // to reach /login otherwise, and need it to create a real account later.
+  if (!!req.auth && isAuthPage) {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 });

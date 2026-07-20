@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { getThesesForTicker, getDailySentiment, getUserNotes, getUserFeedback } from "@/lib/queries";
 import { getPriceInfo, getPriceHistory } from "@/lib/price";
 import { getRelatedTickers } from "@/lib/related";
-import { computeConsensusFromTheses } from "@/lib/view";
+import { computeConsensusFromTheses, sentimentWeight } from "@/lib/view";
 import SentimentMeter from "@/components/SentimentMeter";
 import Sparkline from "@/components/Sparkline";
 import RelatedTickers from "@/components/RelatedTickers";
@@ -50,9 +50,20 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
     vote: feedback[r.id] ?? null,
   }));
 
-  const bull = theses.filter((t) => t.sentiment === "bullish").length;
-  const bear = theses.filter((t) => t.sentiment === "bearish").length;
-  const neutral = theses.length - bull - bear;
+  // Age-weighted so a week-old bearish thread doesn't cancel out this
+  // morning's bullish posts one-for-one — see sentimentWeight.
+  let bullW = 0;
+  let bearW = 0;
+  let neutralW = 0;
+  for (const t of theses) {
+    const w = sentimentWeight(t.postedAt);
+    if (t.sentiment === "bullish") bullW += w;
+    else if (t.sentiment === "bearish") bearW += w;
+    else neutralW += w;
+  }
+  const bull = Math.round(bullW);
+  const bear = Math.round(bearW);
+  const neutral = Math.round(neutralW);
 
   const consensus = computeConsensusFromTheses(theses);
 

@@ -1,12 +1,39 @@
 # puts everything together, the claude client, the praw api, and then reddit_ingest and then extract
 
+import socket
+import time
+
 from google import genai
 import config
 import db
 from reddit_ingest import fetch_new_posts
 from extract import run_extraction
 
+NETWORK_WAIT_SECONDS = 60   # give Wi-Fi/DNS time to come back after a wake-from-sleep launch
+NETWORK_POLL_INTERVAL = 3
+
+
+def wait_for_network(timeout=NETWORK_WAIT_SECONDS) -> bool:
+    """Task Scheduler's "start when available" fires the instant Windows
+    unlocks/wakes, often before Wi-Fi has reconnected and DNS is resolving
+    again — every request (Reddit, Supabase, Gemini) failed with
+    NameResolutionError the one time this actually happened. Poll for a
+    working DNS lookup before doing anything network-dependent."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            socket.gethostbyname("arctic-shift.photon-reddit.com")
+            return True
+        except OSError:
+            time.sleep(NETWORK_POLL_INTERVAL)
+    return False
+
+
 def main():
+    if not wait_for_network():
+        print(f"No network after {NETWORK_WAIT_SECONDS}s — skipping this run, will retry next scheduled run.")
+        return
+
     run_id = db.start_worker_run()  # tracked so the quota dashboard has real run history
 
     # If anything below throws unexpectedly, this run record must still be

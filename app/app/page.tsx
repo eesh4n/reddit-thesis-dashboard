@@ -6,7 +6,7 @@ import SentimentMeter from "@/components/SentimentMeter";
 import DashboardSections from "@/components/DashboardSections";
 import DigestPanel from "@/components/DigestPanel";
 import TopConviction, { type ConvictionThesis } from "@/components/TopConviction";
-import { aggregateByTicker, type ThesisView } from "@/lib/view";
+import { aggregateByTicker, sentimentWeight, type ThesisView } from "@/lib/view";
 
 export const dynamic = "force-dynamic"; // always read fresh from the db
 
@@ -46,14 +46,18 @@ export default async function Home() {
 
   const aggs = [...aggregateByTicker(theses).values()];
 
-  const totals = { bull: 0, bear: 0, neutral: 0 };
+  // Age-weighted so a week-old bearish thread doesn't cancel out this
+  // morning's bullish posts one-for-one — see sentimentWeight.
+  const weighted = { bull: 0, bear: 0, neutral: 0 };
   for (const t of theses) {
-    if (t.sentiment === "bullish") totals.bull++;
-    else if (t.sentiment === "bearish") totals.bear++;
-    else totals.neutral++;
+    const w = sentimentWeight(t.postedAt);
+    if (t.sentiment === "bullish") weighted.bull += w;
+    else if (t.sentiment === "bearish") weighted.bear += w;
+    else weighted.neutral += w;
   }
-  const directional = totals.bull + totals.bear;
-  const bullPct = directional > 0 ? Math.round((totals.bull / directional) * 100) : 50;
+  const totals = { bull: Math.round(weighted.bull), bear: Math.round(weighted.bear), neutral: Math.round(weighted.neutral) };
+  const directional = weighted.bull + weighted.bear;
+  const bullPct = directional > 0 ? Math.round((weighted.bull / directional) * 100) : 50;
   const isBullish = bullPct >= 50;
 
   return (

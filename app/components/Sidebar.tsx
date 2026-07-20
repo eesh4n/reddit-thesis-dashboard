@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Flame, Bookmark, LogOut, Sparkles, Award, Loader, Gauge } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, LogIn, Sparkles, Award, Loader, Gauge } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 
@@ -95,7 +95,7 @@ export default function Sidebar({
         </Link>
         <Clock />
 
-        {email && (
+        {email ? (
           <div className="mt-4 flex items-center justify-between gap-2 border-t border-edge-soft pt-3.5">
             <span className="truncate text-[11.5px] text-faint" title={email}>
               {email}
@@ -107,6 +107,20 @@ export default function Sidebar({
             >
               <LogOut size={13} />
             </button>
+          </div>
+        ) : (
+          // No session — browsing on the guest identity. Guests aren't
+          // bounced away from /login by the middleware (see middleware.ts),
+          // so this is a real way in to create or sign into an account
+          // without losing the "just let me in" flow guests get by default.
+          <div className="mt-4 border-t border-edge-soft pt-3.5">
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 text-[11.5px] font-semibold text-gold transition-colors duration-150 hover:brightness-110"
+            >
+              <LogIn size={13} className="shrink-0" />
+              Log in to save across devices
+            </Link>
           </div>
         )}
       </div>
