@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Flame, Bookmark, LogOut, LogIn, Sparkles, Award, Loader, Gauge } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, LogIn, Sparkles, Award, Loader, Gauge, Search, BarChart3 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
+import AlertsBell from "./AlertsBell";
+import type { TickerAgg } from "@/lib/view";
 
 function Clock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -38,14 +40,16 @@ export default function Sidebar({
   email,
   knownTickers,
   backlogCount,
+  aggs,
 }: {
   thesisCount: number;
   email?: string | null;
   knownTickers: string[];
   backlogCount: number;
+  aggs: TickerAgg[];
 }) {
   return (
-    <aside className="sticky top-0 flex h-screen flex-col gap-6 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center">
+    <aside className="sticky top-0 flex h-screen flex-col gap-6 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center max-md:gap-4 max-md:p-4">
       <div className="flex items-center gap-3">
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold to-[#c2790f] font-display text-lg font-bold text-[#1a1204] shadow-[0_8px_20px_-6px_var(--color-gold)]">
           ◆
@@ -56,9 +60,11 @@ export default function Sidebar({
         </div>
       </div>
 
-      <TickerSearch knownTickers={knownTickers} />
+      <div className="max-md:w-full">
+        <TickerSearch knownTickers={knownTickers} />
+      </div>
 
-      <nav className="flex flex-col gap-1 max-md:flex-row">
+      <nav className="flex flex-col gap-1 max-md:w-full max-md:flex-row max-md:flex-wrap">
         <div className="mb-2 ml-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-faint max-md:hidden">Desk</div>
         {links.map(({ href, label, icon: Icon }) => (
           <a
@@ -69,9 +75,22 @@ export default function Sidebar({
             <Icon size={16} /> {label}
           </a>
         ))}
+        <Link
+          href="/search"
+          className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
+        >
+          <Search size={16} /> Search
+        </Link>
+        <Link
+          href="/compare"
+          className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
+        >
+          <BarChart3 size={16} /> Compare
+        </Link>
+        <AlertsBell aggs={aggs} />
       </nav>
 
-      <div className="mt-auto border-t border-edge-soft pt-4 max-md:mt-0 max-md:border-0 max-md:pt-0">
+      <div className="mt-auto border-t border-edge-soft pt-4 max-md:mt-0 max-md:w-full max-md:border-0 max-md:pt-0">
         <div className="flex items-center text-xs text-mute">
           <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-bull shadow-[0_0_8px_var(--color-bull)]" />
           Live feed · {thesisCount} theses

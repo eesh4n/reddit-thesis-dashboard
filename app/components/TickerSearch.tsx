@@ -7,10 +7,11 @@ import { Search } from "lucide-react";
 // Jump straight to any ticker's detail page. Uses a native <datalist> for
 // autocomplete against tickers we actually have data for — zero extra
 // dependencies, works with keyboard and screen readers out of the box.
+// Anything that isn't a known ticker falls through to a full-text search
+// across every thesis instead of just erroring.
 export default function TickerSearch({ knownTickers }: { knownTickers: string[] }) {
   const router = useRouter();
   const [value, setValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Press "/" anywhere (except while typing in another field) to jump to search.
@@ -32,15 +33,15 @@ export default function TickerSearch({ knownTickers }: { knownTickers: string[] 
       className="flex flex-col gap-1"
       onSubmit={(e) => {
         e.preventDefault();
-        const ticker = value.trim().toUpperCase();
-        if (!ticker) return;
-        if (!knownTickers.includes(ticker)) {
-          setError(`No theses for ${ticker} yet.`);
-          return;
-        }
-        setError(null);
+        const raw = value.trim();
+        if (!raw) return;
+        const ticker = raw.toUpperCase();
         setValue("");
-        router.push(`/ticker/${ticker}`);
+        if (knownTickers.includes(ticker)) {
+          router.push(`/ticker/${ticker}`);
+        } else {
+          router.push(`/search?q=${encodeURIComponent(raw)}`);
+        }
       }}
     >
       <div className="relative">
@@ -48,13 +49,10 @@ export default function TickerSearch({ knownTickers }: { knownTickers: string[] 
         <input
           ref={inputRef}
           value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            if (error) setError(null);
-          }}
+          onChange={(e) => setValue(e.target.value)}
           list="known-tickers"
-          placeholder="Jump to ticker…"
-          aria-label="Jump to ticker"
+          placeholder="Search tickers or theses…"
+          aria-label="Search tickers or theses"
           className="w-full rounded-lg border border-edge bg-panel-2 py-2 pl-8 pr-3 font-mono text-[12.5px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
         />
         <datalist id="known-tickers">
@@ -63,7 +61,6 @@ export default function TickerSearch({ knownTickers }: { knownTickers: string[] 
           ))}
         </datalist>
       </div>
-      {error && <p className="px-1 text-[11px] text-bear">{error}</p>}
     </form>
   );
 }

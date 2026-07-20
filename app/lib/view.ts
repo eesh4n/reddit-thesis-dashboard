@@ -88,3 +88,60 @@ export function aggregateByTicker(theses: ThesisView[]): Map<string, TickerAgg> 
   }
   return out;
 }
+
+// How much recency+confidence-weighted evidence it takes to reach "half
+// confident" in the Alpha Score below. Roughly: ~10 fresh, high-confidence
+// theses gets you halfway to full saturation; a few dozen gets you close to
+// the cap. Tune this constant, not the formula, if the score feels too
+// twitchy or too damped in practice.
+const ALPHA_EVIDENCE_HALF_SATURATION = 10;
+
+// A single number that folds in direction, confidence, AND evidence volume —
+// unlike a plain bull/bear percentage, which normalizes away sample size and
+// makes "81% bullish across 3 theses" look identical to "81% bullish across
+// 300 theses." One is noise, the other is signal; this score tells them
+// apart.
+//
+// lean = weighted net / weighted total, same -1..1 conviction-per-thesis
+// average the percentage uses. saturation = weighted total / (total + k),
+// which is ~0 for a handful of theses and approaches 1 as evidence piles up.
+// Multiplying the two means a strong, one-sided lean on thin evidence stays
+// muted near 0, and only swings toward ±100 when there's real weight behind
+// it — fresh, confident, and lopsided all at once.
+export function computeAlphaScore(
+  theses: { sentiment: "bullish" | "bearish" | "neutral"; confidence: number; postedAt: string }[],
+): number {
+  const now = Date.now();
+  let net = 0;
+  let total = 0;
+  for (const t of theses) {
+    const w = sentimentWeight(t.postedAt, now) * t.confidence;
+    total += w;
+    if (t.sentiment === "bullish") net += w;
+    else if (t.sentiment === "bearish") net -= w;
+  }
+  if (total === 0) return 0;
+  const lean = net / total;
+  const saturation = total / (total + ALPHA_EVIDENCE_HALF_SATURATION);
+  return Math.round(lean * saturation * 100);
+}
+
+const ALERT_MIN_BEARISH = 2; // at least this many bearish theses in the window
+const ALERT_WINDOW_HOURS = 24;
+
+// Early warning for a stock you own: 2+ bearish theses posted in the last
+// 24h and bears outnumbering bulls in that window. Recency is the point —
+// the overall meter can still look fine while today's posts turn negative.
+// Shared so the sidebar bell, the holdings card, and the alerts page all
+// agree on what counts as "worth flagging."
+export function hasBearishAlert(theses: { sentiment: ThesisView["sentiment"]; postedAt: string }[]): boolean {
+  const cutoff = Date.now() - ALERT_WINDOW_HOURS * 60 * 60 * 1000;
+  let bull = 0;
+  let bear = 0;
+  for (const t of theses) {
+    if (new Date(t.postedAt).getTime() < cutoff) continue;
+    if (t.sentiment === "bullish") bull++;
+    else if (t.sentiment === "bearish") bear++;
+  }
+  return bear >= ALERT_MIN_BEARISH && bear > bull;
+}

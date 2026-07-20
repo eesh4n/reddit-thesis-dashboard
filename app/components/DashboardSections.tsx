@@ -4,7 +4,7 @@ import TickerCard from "./TickerCard";
 import TrendingRow from "./TrendingRow";
 import AddTickerForm from "./AddTickerForm";
 import { useTickerList } from "@/hooks/useTickerList";
-import type { TickerAgg } from "@/lib/view";
+import { hasBearishAlert, type TickerAgg } from "@/lib/view";
 
 // Owns the interactive state: holdings + watchlist are per-user rows in
 // Postgres (via /api/portfolio), trending is everything else, ranked by
@@ -16,21 +16,6 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
   const byTicker = new Map(aggs.map((a) => [a.ticker, a]));
   const agg = (ticker: string): TickerAgg =>
     byTicker.get(ticker) ?? { ticker, bull: 0, bear: 0, neutral: 0, theses: [], consensus: null };
-
-  // Early warning for stocks you own: 2+ bearish theses posted in the last
-  // 24h and bears outnumbering bulls in that window. Recency is the point —
-  // the overall meter can still look fine while today's posts turn negative.
-  function bearishAlert(a: TickerAgg): boolean {
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    let bull = 0;
-    let bear = 0;
-    for (const t of a.theses) {
-      if (new Date(t.postedAt).getTime() < cutoff) continue;
-      if (t.sentiment === "bullish") bull++;
-      else if (t.sentiment === "bearish") bear++;
-    }
-    return bear >= 2 && bear > bull;
-  }
 
   const trending = aggs
     .filter((a) => !holdings.tickers.includes(a.ticker) && !watchlist.tickers.includes(a.ticker))
@@ -51,9 +36,9 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
         ) : holdings.tickers.length === 0 ? (
           <EmptyState text="Add the stocks you own to see what Reddit is saying about them." />
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {holdings.tickers.map((t) => (
-              <TickerCard key={t} agg={agg(t)} onRemove={() => holdings.remove(t)} alert={bearishAlert(agg(t))} />
+              <TickerCard key={t} agg={agg(t)} onRemove={() => holdings.remove(t)} alert={hasBearishAlert(agg(t).theses)} />
             ))}
           </div>
         )}
@@ -89,7 +74,7 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
         ) : watchlist.tickers.length === 0 ? (
           <EmptyState text="Your watchlist is empty. Add a trending idea above to follow its sentiment." />
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {watchlist.tickers.map((t) => (
               <TickerCard key={t} agg={agg(t)} onRemove={() => watchlist.remove(t)} />
             ))}
@@ -108,7 +93,7 @@ function EmptyState({ text }: { text: string }) {
 
 function CardsSkeleton() {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
       {[0, 1].map((i) => (
         <div key={i} className="h-40 animate-pulse rounded-xl border border-edge bg-panel" />
       ))}

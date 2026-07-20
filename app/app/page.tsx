@@ -6,7 +6,8 @@ import SentimentMeter from "@/components/SentimentMeter";
 import DashboardSections from "@/components/DashboardSections";
 import DigestPanel from "@/components/DigestPanel";
 import TopConviction, { type ConvictionThesis } from "@/components/TopConviction";
-import { aggregateByTicker, sentimentWeight, type ThesisView } from "@/lib/view";
+import AlphaGauge from "@/components/AlphaGauge";
+import { aggregateByTicker, computeAlphaScore, sentimentWeight, type ThesisView } from "@/lib/view";
 
 export const dynamic = "force-dynamic"; // always read fresh from the db
 
@@ -56,9 +57,11 @@ export default async function Home() {
     else weighted.neutral += w;
   }
   const totals = { bull: Math.round(weighted.bull), bear: Math.round(weighted.bear), neutral: Math.round(weighted.neutral) };
-  const directional = weighted.bull + weighted.bear;
-  const bullPct = directional > 0 ? Math.round((weighted.bull / directional) * 100) : 50;
-  const isBullish = bullPct >= 50;
+
+  // Folds in confidence and evidence volume, not just direction — see
+  // computeAlphaScore. Replaces the plain bull% as the headline number
+  // because a percentage alone can't tell "3 theses" from "300 theses."
+  const alphaScore = computeAlphaScore(theses);
 
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
@@ -67,6 +70,7 @@ export default async function Home() {
         email={session?.user?.email}
         knownTickers={aggs.map((a) => a.ticker)}
         backlogCount={backlogCount}
+        aggs={aggs}
       />
 
       <main className="mx-auto w-full max-w-[1600px] pb-20">
@@ -78,15 +82,23 @@ export default async function Home() {
               What Reddit is saying <span className="text-mute">about your book.</span>
             </h1>
           </div>
-          <div className="min-w-64 text-right max-md:text-left">
-            <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint">
-              Aggregate sentiment
+          <div className="w-full min-w-64 max-w-80 text-right max-md:max-w-none max-md:text-left">
+            <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint" title="Weighs each thesis by confidence and recency, then scales toward ±100 only as real evidence piles up — a lopsided read on 3 theses stays muted; the same lean on 300 swings hard.">
+              Alpha score
             </p>
-            <div className={`font-display text-[52px] font-bold leading-none tracking-tight ${isBullish ? "text-bull" : "text-bear"}`}>
-              {bullPct}<span className="text-3xl">%</span>
+            <div
+              className={`font-display text-[52px] font-bold leading-none tracking-tight ${alphaScore > 0 ? "text-bull" : alphaScore < 0 ? "text-bear" : "text-mute"}`}
+            >
+              {alphaScore > 0 ? "+" : ""}
+              {alphaScore}
             </div>
-            <p className="mb-3 text-[12px] font-semibold text-faint">bullish across {theses.length} theses</p>
-            <SentimentMeter bull={totals.bull} bear={totals.bear} neutral={totals.neutral} />
+            <p className="mb-3 text-[12px] font-semibold text-faint">
+              {totals.bull} bull · {totals.bear} bear across {theses.length} theses
+            </p>
+            <AlphaGauge score={alphaScore} />
+            <div className="mt-3">
+              <SentimentMeter bull={totals.bull} bear={totals.bear} neutral={totals.neutral} compact />
+            </div>
           </div>
         </header>
 

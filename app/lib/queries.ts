@@ -106,18 +106,21 @@ export async function getTodayRunStats() {
 }
 
 // Daily bull/bear/neutral counts for one ticker over the last N days —
-// feeds the sentiment trend sparkline on the ticker detail page.
+// feeds the sentiment trend sparkline on the ticker detail page. Bucketed
+// by the Reddit post's own postedAt, not extractedAt: batched, priority-
+// ordered extraction can analyze a days-old post today, which bucketed it
+// onto the wrong day and skewed the trend line.
 export async function getDailySentiment(ticker: string, days = 14) {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const rows = await prisma.thesis.findMany({
-        where: { ticker: ticker.toUpperCase(), extractedAt: { gte: since } },
-        select: { sentiment: true, extractedAt: true },
-        orderBy: { extractedAt: "asc" },
+        where: { ticker: ticker.toUpperCase(), rawPost: { postedAt: { gte: since } } },
+        select: { sentiment: true, rawPost: { select: { postedAt: true } } },
+        orderBy: { rawPost: { postedAt: "asc" } },
     });
 
     const byDay = new Map<string, { bull: number; bear: number; neutral: number }>();
     for (const r of rows) {
-        const day = r.extractedAt.toISOString().slice(0, 10); // YYYY-MM-DD
+        const day = r.rawPost.postedAt.toISOString().slice(0, 10); // YYYY-MM-DD
         const entry = byDay.get(day) ?? { bull: 0, bear: 0, neutral: 0 };
         if (r.sentiment === "bullish") entry.bull++;
         else if (r.sentiment === "bearish") entry.bear++;
@@ -134,4 +137,37 @@ export async function getDailySentiment(ticker: string, days = 14) {
         points.push({ date: d, net: entry.bull - entry.bear, total: entry.bull + entry.bear + entry.neutral });
     }
     return points;
+}
+
+// Full-text search across ticker, summary, and reasoning — for when you
+// half-remember a thesis ("something about a breakup fee") but not which
+// ticker it was under. Case-insensitive substring match; good enough at
+// this table size without standing up Postgres full-text search.
+export async function searchTheses(query: string, limit = 40) {
+    const q = query.trim();
+    if (!q) return [];
+    return prisma.thesis.findMany({
+        where: {
+            OR: [
+                { ticker: { contains: q, mode: "insensitive" } },
+                { summary: { contains: q, mode: "insensitive" } },
+                { reasoning: { contains: q, mode: "insensitive" } },
+            ],
+        },
+        orderBy: { rawPost: { postedAt: "desc" } },
+        take: limit,
+        include: { rawPost: { select: { permalink: true, subreddit: true, postedAt: true, author: true } } },
+    });
+}
+
+// Per-ticker snapshot for the comparison view: current sentiment split,
+// consensus, and how many theses exist at all (so we can tell "no data" from
+// "0 bull / 0 bear because everything's neutral").
+export async function getTickerSnapshot(ticker: string, days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    return prisma.thesis.findMany({
+        where: { ticker: ticker.toUpperCase(), rawPost: { postedAt: { gte: since } } },
+        orderBy: { rawPost: { postedAt: "desc" } },
+        include: { rawPost: { select: { permalink: true, subreddit: true, postedAt: true, author: true } } },
+    });
 }
