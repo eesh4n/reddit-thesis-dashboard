@@ -2,12 +2,10 @@ import { auth } from "@/lib/auth";
 import { getAllTheses, getTopConvictionToday, getBacklogCount } from "@/lib/queries";
 import { getDigest } from "@/lib/digest";
 import Sidebar from "@/components/Sidebar";
-import SentimentMeter from "@/components/SentimentMeter";
 import DashboardSections from "@/components/DashboardSections";
 import DigestPanel from "@/components/DigestPanel";
 import TopConviction, { type ConvictionThesis } from "@/components/TopConviction";
-import AlphaGauge from "@/components/AlphaGauge";
-import { aggregateByTicker, computeAlphaScore, sentimentWeight, type ThesisView } from "@/lib/view";
+import { aggregateByTicker, type ThesisView } from "@/lib/view";
 
 export const dynamic = "force-dynamic"; // always read fresh from the db
 
@@ -19,9 +17,8 @@ export default async function Home() {
     getTopConvictionToday(),
     getBacklogCount(),
   ]);
-  const { rows: convictionRows, windowHours: convictionWindowHours } = convictionResult;
 
-  const conviction: ConvictionThesis[] = convictionRows.map((r) => ({
+  const conviction: ConvictionThesis[] = convictionResult.rows.map((r) => ({
     id: r.id,
     ticker: r.ticker,
     summary: r.summary,
@@ -47,22 +44,6 @@ export default async function Home() {
 
   const aggs = [...aggregateByTicker(theses).values()];
 
-  // Age-weighted so a week-old bearish thread doesn't cancel out this
-  // morning's bullish posts one-for-one — see sentimentWeight.
-  const weighted = { bull: 0, bear: 0, neutral: 0 };
-  for (const t of theses) {
-    const w = sentimentWeight(t.postedAt);
-    if (t.sentiment === "bullish") weighted.bull += w;
-    else if (t.sentiment === "bearish") weighted.bear += w;
-    else weighted.neutral += w;
-  }
-  const totals = { bull: Math.round(weighted.bull), bear: Math.round(weighted.bear), neutral: Math.round(weighted.neutral) };
-
-  // Folds in confidence and evidence volume, not just direction — see
-  // computeAlphaScore. Replaces the plain bull% as the headline number
-  // because a percentage alone can't tell "3 theses" from "300 theses."
-  const alphaScore = computeAlphaScore(theses);
-
   return (
     <div className="grid min-h-screen grid-cols-[248px_1fr] max-md:grid-cols-1">
       <Sidebar
@@ -74,42 +55,26 @@ export default async function Home() {
       />
 
       <main className="mx-auto w-full max-w-[1600px] pb-20">
-        {/* ── Briefing header — big bold number is the hero moment ── */}
-        <header className="flex items-end justify-between gap-8 border-b border-edge-soft px-11 pb-8 pt-10 max-md:flex-col max-md:items-start max-md:px-6">
-          <div>
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Morning briefing</p>
-            <h1 className="font-display text-[40px] font-bold leading-[1.02] tracking-tight max-md:text-[30px]">
-              What Reddit is saying <span className="text-mute">about your book.</span>
-            </h1>
-          </div>
-          <div className="w-full min-w-64 max-w-80 text-right max-md:max-w-none max-md:text-left">
-            <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint" title="Weighs each thesis by confidence and recency, then scales toward ±100 only as real evidence piles up — a lopsided read on 3 theses stays muted; the same lean on 300 swings hard.">
-              Alpha score
-            </p>
-            <div
-              className={`font-display text-[52px] font-bold leading-none tracking-tight ${alphaScore > 0 ? "text-bull" : alphaScore < 0 ? "text-bear" : "text-mute"}`}
-            >
-              {alphaScore > 0 ? "+" : ""}
-              {alphaScore}
-            </div>
-            <p className="mb-3 text-[12px] font-semibold text-faint">
-              {totals.bull} bull · {totals.bear} bear across {theses.length} theses
-            </p>
-            <AlphaGauge score={alphaScore} />
-            <div className="mt-3">
-              <SentimentMeter bull={totals.bull} bear={totals.bear} neutral={totals.neutral} compact />
-            </div>
-          </div>
+        {/* ── Briefing header — no market-wide score here anymore; that
+            told you nothing about your book. Aggregate sentiment now lives
+            scoped to Holdings and Watchlist in DashboardSections. ── */}
+        <header className="border-b border-edge-soft px-11 pb-8 pt-10 max-md:px-6">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Morning briefing</p>
+          <h1 className="font-display text-[40px] font-bold leading-[1.02] tracking-tight max-md:text-[30px]">
+            What Reddit is saying <span className="text-mute">about your book.</span>
+          </h1>
         </header>
 
         {/* "What changed since yesterday" — the actual morning-briefing payoff */}
         <DigestPanel digest={digest} />
 
-        {/* Strongest ideas of the last day (or longer, on a quiet news day), regardless of ticker */}
-        <TopConviction theses={conviction} windowHours={convictionWindowHours} />
+        {/* Strongest ideas right now, regardless of ticker — constantly re-ranked, not stuck on a fixed window */}
+        <TopConviction theses={conviction} />
 
         {/* Interactive sections (holdings / trending / watchlist) — client-side,
-            holdings & watchlist are per-user rows in Postgres. */}
+            holdings & watchlist are per-user rows in Postgres. Each of
+            Holdings/Watchlist gets its own Alpha Score, scoped to just
+            that list's theses. */}
         <DashboardSections aggs={aggs} />
       </main>
     </div>

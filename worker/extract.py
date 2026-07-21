@@ -17,7 +17,10 @@ MODEL = "gemini-2.5-flash-lite"  # higher free-tier limits than full flash; ampl
 # against a fixed request budget — this was raised from 10 to 25 for exactly
 # that reason (roughly 2.5x more posts processed per day for the same quota).
 BATCH_SIZE = 25
-MAX_CHARS = 2000        # cap per-post text so batches stay small
+MAX_CHARS = 4000        # cap per-post text — raised from 2000 so multi-ticker due-diligence
+                        # posts (sector roundups, "X vs Y" comparisons) don't get truncated
+                        # before mentioning their later tickers. Still nowhere near the
+                        # model's ~1M token context even at 25 posts/batch.
 THROTTLE_SECONDS = 4    # 25 posts/request * 15 req/min ≈ 375 posts/min, still under the 20/min request cap
 RATE_LIMIT_WAIT = 30    # seconds to wait out a 429 before retrying the same batch
 MAX_RETRIES = 6         # give up on a batch only after this many rate-limited attempts
@@ -60,6 +63,13 @@ BATCH_PROMPT = """You are analyzing Reddit posts for stock investment theses.
 You will receive a JSON array of posts, each with an "index" and "text".
 
 For EACH post, extract every distinct stock ticker that has a real investment thesis.
+
+IMPORTANT — do not stop at the first or most obvious ticker. Many posts cover MULTIPLE
+tickers: sector roundups ("3 semiconductor plays for Q3"), head-to-head comparisons
+("NVDA vs AMD vs AVGO"), watchlists, or a DD post that argues for a basket of names.
+If the post gives separate, distinct reasoning for two or more tickers, return a
+SEPARATE thesis object for EACH one — don't collapse them into a single thesis or
+report only the ticker mentioned first.
 
 A thesis is a FORWARD-LOOKING ARGUMENT: a claim about where a stock is going, backed by
 reasoning a reader could evaluate — fundamentals, catalysts, valuation, data, or a clearly

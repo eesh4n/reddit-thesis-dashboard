@@ -3,8 +3,9 @@
 import TickerCard from "./TickerCard";
 import TrendingRow from "./TrendingRow";
 import AddTickerForm from "./AddTickerForm";
+import AlphaGauge from "./AlphaGauge";
 import { useTickerList } from "@/hooks/useTickerList";
-import { hasBearishAlert, type TickerAgg } from "@/lib/view";
+import { hasBearishAlert, computeAlphaScore, type TickerAgg } from "@/lib/view";
 
 // Owns the interactive state: holdings + watchlist are per-user rows in
 // Postgres (via /api/portfolio), trending is everything else, ranked by
@@ -16,6 +17,10 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
   const byTicker = new Map(aggs.map((a) => [a.ticker, a]));
   const agg = (ticker: string): TickerAgg =>
     byTicker.get(ticker) ?? { ticker, bull: 0, bear: 0, neutral: 0, theses: [], consensus: null };
+
+  // Alpha Score scoped to just this list's theses — not the whole market,
+  // which told you nothing about the tickers you actually hold or watch.
+  const scoreFor = (tickers: string[]) => computeAlphaScore(tickers.flatMap((t) => agg(t).theses));
 
   const trending = aggs
     .filter((a) => !holdings.tickers.includes(a.ticker) && !watchlist.tickers.includes(a.ticker))
@@ -30,6 +35,17 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
           <h2 className="font-display text-lg font-semibold tracking-tight">Your Holdings</h2>
           <span className="ml-auto text-xs text-faint">Stocks you own · click a card for the full picture</span>
         </div>
+        {holdings.loaded && holdings.tickers.length > 0 && (
+          <div className="mb-5 rounded-xl border border-edge bg-panel p-4">
+            <p
+              className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint"
+              title="Weighs each of your holdings' theses by confidence and recency, then scales toward ±100 only as real evidence piles up."
+            >
+              Holdings alpha score
+            </p>
+            <AlphaGauge score={scoreFor(holdings.tickers)} />
+          </div>
+        )}
         <AddTickerForm placeholder="Add a holding, e.g. NVDA" onAdd={holdings.add} />
         {!holdings.loaded ? (
           <CardsSkeleton />
@@ -68,6 +84,17 @@ export default function DashboardSections({ aggs }: { aggs: TickerAgg[] }) {
           <h2 className="font-display text-lg font-semibold tracking-tight">Watchlist</h2>
           <span className="ml-auto text-xs text-faint">Ideas you&apos;re tracking</span>
         </div>
+        {watchlist.loaded && watchlist.tickers.length > 0 && (
+          <div className="mb-5 rounded-xl border border-edge bg-panel p-4">
+            <p
+              className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint"
+              title="Weighs each watchlist ticker's theses by confidence and recency, then scales toward ±100 only as real evidence piles up."
+            >
+              Watchlist alpha score
+            </p>
+            <AlphaGauge score={scoreFor(watchlist.tickers)} />
+          </div>
+        )}
         <AddTickerForm placeholder="Add to watchlist, e.g. TSLA" onAdd={watchlist.add} />
         {!watchlist.loaded ? (
           <CardsSkeleton />

@@ -31,9 +31,13 @@ const CONSENSUS_MIN_RATIO = 2; // and that side must outnumber the other by this
 // still register a faint signal rather than vanishing outright.
 const SENTIMENT_HALF_LIFE_DAYS = 7;
 
-export function sentimentWeight(postedAt: string, now: number = Date.now()): number {
+export function sentimentWeight(
+  postedAt: string,
+  now: number = Date.now(),
+  halfLifeDays: number = SENTIMENT_HALF_LIFE_DAYS,
+): number {
   const ageDays = Math.max(0, (now - new Date(postedAt).getTime()) / (1000 * 60 * 60 * 24));
-  return Math.pow(0.5, ageDays / SENTIMENT_HALF_LIFE_DAYS);
+  return Math.pow(0.5, ageDays / halfLifeDays);
 }
 
 // Exported so every place that decides "does this ticker have consensus"

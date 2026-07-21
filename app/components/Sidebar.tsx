@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Flame, Bookmark, LogOut, LogIn, Sparkles, Award, Loader, Gauge, Search, BarChart3 } from "lucide-react";
+import { Briefcase, Flame, Bookmark, LogOut, LogIn, Sparkles, Award, Loader, Gauge, Search } from "lucide-react";
 import { signOut } from "next-auth/react";
 import TickerSearch from "./TickerSearch";
 import AlertsBell from "./AlertsBell";
@@ -80,12 +80,6 @@ export default function Sidebar({
           className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
         >
           <Search size={16} /> Search
-        </Link>
-        <Link
-          href="/compare"
-          className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-mute transition-colors duration-150 hover:bg-panel-2 hover:text-fg"
-        >
-          <BarChart3 size={16} /> Compare
         </Link>
         <AlertsBell aggs={aggs} />
       </nav>

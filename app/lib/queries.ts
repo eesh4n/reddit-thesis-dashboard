@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { sentimentWeight } from "@/lib/view";
 
 // Bounded to the last N days: the dashboard only needs recent activity for
 // holdings/trending, and this table grows daily with the scraper — an
@@ -16,26 +17,31 @@ export async function getAllTheses(days = 30) {
 
 };
 
-// Highest-confidence theses — the "start your morning here" list. Prefers
-// the last 24h; if the scraper had a quiet day (or the extraction quota
-// stalled), widens to 72h instead of showing nothing. Returns the window it
-// used so the UI can label itself honestly.
-//
-// Windowed on the Reddit post's own postedAt, not extractedAt: batched,
-// priority-ordered extraction can pull in a days-old post today, and
-// filtering by scrape time let stale posts show up labeled "last 24h."
-export async function getTopConvictionToday(limit = 6, minConfidence = 0.85) {
-    for (const hours of [24, 72]) {
-        const since = new Date(Date.now() - hours * 60 * 60 * 1000);
-        const rows = await prisma.thesis.findMany({
-            where: { rawPost: { postedAt: { gte: since } }, confidence: { gte: minConfidence } },
-            orderBy: [{ confidence: "desc" }, { rawPost: { postedAt: "desc" } }],
-            take: limit,
-            include: { rawPost: { select: { permalink: true, subreddit: true, postedAt: true } } },
-        });
-        if (rows.length > 0) return { rows, windowHours: hours };
-    }
-    return { rows: [], windowHours: 24 };
+// Highest-conviction theses right now — the "start your morning here" list.
+// A hard 24h-then-72h confidence cutoff kept surfacing 2-3 day old posts
+// under a "last 24h" label whenever today itself was quiet, which felt
+// stale ("this isn't today"). Instead: pull a wider pool (10 days,
+// confidence >= 0.75) and rank by confidence decayed by age with a short
+// half-life — a 90%-confidence post from 3 days ago now loses to an
+// 80%-confidence post from this morning, so the list responds to new
+// extractions continuously instead of jumping between two fixed windows.
+const CONVICTION_HALF_LIFE_DAYS = 1.5;
+
+export async function getTopConvictionToday(limit = 6, minConfidence = 0.75) {
+    const since = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const candidates = await prisma.thesis.findMany({
+        where: { rawPost: { postedAt: { gte: since } }, confidence: { gte: minConfidence } },
+        include: { rawPost: { select: { permalink: true, subreddit: true, postedAt: true } } },
+    });
+
+    const now = Date.now();
+    const ranked = candidates
+        .map((t) => ({ t, score: t.confidence * sentimentWeight(t.rawPost.postedAt.toISOString(), now, CONVICTION_HALF_LIFE_DAYS) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map((r) => r.t);
+
+    return { rows: ranked };
 }
 
 // All theses for one ticker, newest first — used by the ticker detail page.

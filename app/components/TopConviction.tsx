@@ -19,25 +19,18 @@ const chipCls = {
   neutral: "bg-panel-2 text-mute",
 } as const;
 
-// The strongest ideas of the last day (or longer on a quiet news day) across
-// every subreddit, regardless of whether you hold the ticker. Reading
-// material for the morning skim.
-export default function TopConviction({
-  theses,
-  windowHours,
-}: {
-  theses: ConvictionThesis[];
-  windowHours: number;
-}) {
-  if (theses.length === 0) return null; // quiet day — don't render an empty shell
-
-  const windowLabel = windowHours === 24 ? "the last 24h" : `the last ${windowHours / 24} days (quiet last 24h)`;
+// The strongest ideas right now across every subreddit, regardless of
+// whether you hold the ticker — ranked by confidence decayed by how
+// recently the post went up (see getTopConvictionToday), so this list keeps
+// moving as new extractions land instead of freezing on a fixed window.
+export default function TopConviction({ theses }: { theses: ConvictionThesis[] }) {
+  if (theses.length === 0) return null; // nothing meets the bar yet — don't render an empty shell
 
   return (
     <section id="conviction" className="scroll-mt-6 px-11 pt-10 max-md:px-6">
       <div className="mb-5 flex items-baseline gap-3.5">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Top Conviction Today</h2>
-        <span className="ml-auto text-xs text-faint">Highest-confidence theses from {windowLabel}</span>
+        <h2 className="font-display text-lg font-semibold tracking-tight">Top Conviction</h2>
+        <span className="ml-auto text-xs text-faint">Highest-conviction ideas right now</span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
