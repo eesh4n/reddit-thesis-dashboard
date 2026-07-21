@@ -5,8 +5,10 @@ import authConfig from "@/lib/auth.config";
 // Uses the Edge-safe config (no Prisma/bcrypt) — see lib/auth.config.ts.
 const { auth } = NextAuth(authConfig);
 
+const AUTH_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password"];
+
 export default auth((req) => {
-  const isAuthPage = req.nextUrl.pathname === "/login" || req.nextUrl.pathname === "/signup";
+  const isAuthPage = AUTH_PAGES.includes(req.nextUrl.pathname);
   // A guest cookie (set by /api/guest when someone clicks "Continue as
   // guest" on the login page) counts as signed in for gating purposes —
   // middleware runs on the Edge and can't touch Prisma, so this only checks
@@ -28,5 +30,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|api/signup|api/guest|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api/auth|api/signup|api/guest|api/forgot-password|api/reset-password|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
