@@ -83,7 +83,7 @@ export default function Sparkline({
           <path
             d={pricePath}
             fill="none"
-            stroke="var(--color-gold)"
+            stroke="var(--color-accent)"
             strokeWidth={1.3}
             strokeDasharray="3 2"
             strokeLinecap="round"
@@ -98,12 +98,12 @@ export default function Sparkline({
             <span className={`inline-block h-0.5 w-3 rounded-full ${trendUp ? "bg-bull" : "bg-bear"}`} /> sentiment
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="inline-block h-0.5 w-3 rounded-full border-t border-dashed border-gold" /> price
+            <span className="inline-block h-0.5 w-3 rounded-full border-t border-dashed border-accent" /> price
           </span>
         </div>
       )}
       {divergence && (
-        <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-gold/30 bg-gold/10 px-2.5 py-2 text-[11px] leading-snug text-gold">
+        <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-2.5 py-2 text-[11px] leading-snug text-accent">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />
           {divergence.direction === "priceUpSentimentDown" ? (
             <span>

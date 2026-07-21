@@ -75,7 +75,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
     <div className="flex min-h-screen items-center justify-center bg-ink px-6">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-gold to-[#b8842b] font-display text-base font-bold text-[#1a1204] shadow-[0_6px_16px_-6px_var(--color-gold)]">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-accent to-[#1d6fe0] font-display text-base font-bold text-[#ffffff] shadow-[0_6px_16px_-6px_var(--color-accent)]">
             ◆
           </div>
           <div className="text-left">
@@ -101,7 +101,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-accent focus:outline-none"
                 placeholder="you@example.com"
               />
             </label>
@@ -109,7 +109,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
               <span className="flex items-center justify-between">
                 Password
                 {isLogin && (
-                  <Link href="/forgot-password" className="text-[11.5px] font-normal text-faint transition-colors hover:text-gold">
+                  <Link href="/forgot-password" className="text-[11.5px] font-normal text-faint transition-colors hover:text-accent">
                     Forgot password?
                   </Link>
                 )}
@@ -122,7 +122,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isLogin ? "current-password" : "new-password"}
-                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                className="rounded-lg border border-edge bg-panel-2 px-3.5 py-2.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-accent focus:outline-none"
                 placeholder={isLogin ? "••••••••" : "At least 8 characters"}
               />
             </label>
@@ -137,7 +137,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <button
               type="submit"
               disabled={pending}
-              className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-[13.5px] font-semibold text-[#1a1204] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-[13.5px] font-semibold text-[#ffffff] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLogin ? <LogIn size={15} /> : <UserPlus size={15} />}
               {pending ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
@@ -156,7 +156,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 type="button"
                 onClick={handleGuest}
                 disabled={guestPending}
-                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-edge bg-panel-2 px-4 py-2.5 text-[13.5px] font-semibold text-mute transition-colors duration-150 hover:border-gold hover:text-gold disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-edge bg-panel-2 px-4 py-2.5 text-[13.5px] font-semibold text-mute transition-colors duration-150 hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <ArrowRight size={15} />
                 {guestPending ? "Please wait…" : "Continue as guest"}
@@ -172,14 +172,14 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           {isLogin ? (
             <>
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-gold transition-colors hover:brightness-110">
+              <Link href="/signup" className="text-accent transition-colors hover:brightness-110">
                 Sign up
               </Link>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <Link href="/login" className="text-gold transition-colors hover:brightness-110">
+              <Link href="/login" className="text-accent transition-colors hover:brightness-110">
                 Sign in
               </Link>
             </>

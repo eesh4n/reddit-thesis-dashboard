@@ -52,7 +52,7 @@ export default function TickerCard({
           goToDetail();
         }
       }}
-      className="group flex cursor-pointer flex-col gap-4 rounded-2xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-1 hover:border-[#3a4658] hover:shadow-[0_16px_36px_-14px_rgba(0,0,0,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+      className="group flex cursor-pointer flex-col gap-4 rounded-2xl border border-edge bg-panel p-5 transition-all duration-150 hover:-translate-y-1 hover:border-[#3a4658] hover:shadow-[0_16px_36px_-14px_rgba(0,0,0,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <header className="flex items-center gap-2.5">
         <h3 className="font-mono text-xl font-extrabold tracking-tight">{agg.ticker}</h3>
@@ -111,7 +111,7 @@ export default function TickerCard({
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()} // don't trigger the card's navigate
-                className="inline-flex cursor-pointer items-center gap-1 transition-colors duration-150 hover:text-gold"
+                className="inline-flex cursor-pointer items-center gap-1 transition-colors duration-150 hover:text-accent"
               >
                 source <ExternalLink size={10} />
               </a>

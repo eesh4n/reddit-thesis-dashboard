@@ -87,9 +87,9 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
           <button
             key={opt.key}
             onClick={() => setRange(opt.key)}
-            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               range === opt.key
-                ? "border-gold bg-gold/15 text-gold"
+                ? "border-accent bg-accent/15 text-accent"
                 : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
             }`}
           >
@@ -103,9 +103,9 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
           <Hash size={13} className="mr-1 text-faint" />
           <button
             onClick={() => setSubreddit("all")}
-            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               subreddit === "all"
-                ? "border-gold bg-gold/15 text-gold"
+                ? "border-accent bg-accent/15 text-accent"
                 : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
             }`}
           >
@@ -115,9 +115,9 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
             <button
               key={name}
               onClick={() => setSubreddit(name)}
-              className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                 subreddit === name
-                  ? "border-gold bg-gold/15 text-gold"
+                  ? "border-accent bg-accent/15 text-accent"
                   : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
               }`}
             >
@@ -133,9 +133,9 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
           <button
             key={opt.key}
             onClick={() => setSort(opt.key)}
-            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               sort === opt.key
-                ? "border-gold bg-gold/15 text-gold"
+                ? "border-accent bg-accent/15 text-accent"
                 : "border-edge bg-panel text-mute hover:border-[#33445a] hover:text-fg"
             }`}
           >
@@ -170,7 +170,7 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
               href={t.permalink}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex cursor-pointer items-center gap-1 font-mono text-[11.5px] text-faint transition-colors duration-150 hover:text-gold"
+              className="mt-3 inline-flex cursor-pointer items-center gap-1 font-mono text-[11.5px] text-faint transition-colors duration-150 hover:text-accent"
             >
               view source post <ExternalLink size={11} />
             </a>

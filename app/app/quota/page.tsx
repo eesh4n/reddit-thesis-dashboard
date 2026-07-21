@@ -21,7 +21,7 @@ export default async function QuotaPage() {
       </Link>
 
       <header className="mb-8 border-b border-edge-soft pb-7">
-        <p className="mb-2.5 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
+        <p className="mb-2.5 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
           <Gauge size={13} /> Extraction quota
         </p>
         <h1 className="font-display text-[30px] font-bold leading-tight tracking-tight">
@@ -53,7 +53,7 @@ export default async function QuotaPage() {
             </span>
             <span className="font-mono text-[12px] text-faint">{r.postsIngested} ingested</span>
             <span className="font-mono text-[12px] text-faint">{r.requestsUsed} requests</span>
-            <span className="font-mono text-[12px] font-semibold text-gold">{r.thesesExtracted} theses</span>
+            <span className="font-mono text-[12px] font-semibold text-accent">{r.thesesExtracted} theses</span>
             <span
               className={`inline-flex items-center gap-1 justify-self-end font-mono text-[11px] font-semibold uppercase tracking-wider ${
                 r.stoppedReason === "completed" ? "text-bull" : r.stoppedReason === "rate_limited" ? "text-bear" : "text-faint"
@@ -82,7 +82,7 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
   return (
     <div className="rounded-xl border border-edge bg-panel p-5">
       <p className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-faint">{label}</p>
-      <p className={`font-mono text-[28px] font-bold ${accent ? "text-gold" : "text-fg"}`}>{value}</p>
+      <p className={`font-mono text-[28px] font-bold ${accent ? "text-accent" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

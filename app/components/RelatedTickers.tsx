@@ -19,7 +19,7 @@ export default function RelatedTickers({ related }: { related: RelatedTicker[] }
             key={r.ticker}
             href={`/ticker/${r.ticker}`}
             title={`Shared: ${r.sharedTerms.join(", ")}`}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-edge bg-panel px-3 py-1.5 font-mono text-[12.5px] font-semibold text-fg transition-colors duration-150 hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-edge bg-panel px-3 py-1.5 font-mono text-[12.5px] font-semibold text-fg transition-colors duration-150 hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {r.ticker}
             <span className="font-sans text-[11px] font-normal text-faint">{r.sharedTerms[0]}</span>

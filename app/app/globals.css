@@ -1,21 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* Sentiment Desk tokens — bold consumer-app pass: deeper black, punchier
-     signal colors, more contrast between surfaces so cards pop off the bg. */
-  --color-ink: #07090c;
-  --color-panel: #12161c;
-  --color-panel-2: #191f27;
-  --color-edge: #262f3a;
-  --color-edge-soft: #1c2229;
-  --color-fg: #f5f7fa;
-  --color-mute: #8b98a8;
-  --color-faint: #5c6a7a;
+  /* Sentiment Desk tokens — dark, glass-surfaced fintech aesthetic: deep
+     near-black canvas, translucent glass cards/pills, blue accent. Adapted
+     from a reference design system, not any single product's literal
+     branding — colors chosen for the pattern (dark bg + glass + one accent
+     hue), not copied hex-for-hex from anywhere. */
+  --color-ink: #0b0b0f;
+  --color-panel: #131318;
+  --color-panel-2: #1a1a21;
+  --color-edge: rgba(255, 255, 255, 0.12);
+  --color-edge-soft: rgba(255, 255, 255, 0.08);
+  --color-fg: #e6e6e6;
+  --color-mute: rgba(255, 255, 255, 0.6);
+  --color-faint: #868f97;
   --color-bull: #00d47e;
   --color-bull-dim: #0e2e21;
   --color-bear: #ff4d4d;
   --color-bear-dim: #3a1616;
-  --color-gold: #ffb547;
+  --color-accent: #4f9cff;
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
@@ -31,13 +34,24 @@ body {
 }
 
 ::selection {
-  background: var(--color-gold);
-  color: #1a1204;
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* Glass surface — the recurring card/pill/nav treatment: translucent white
+   over the dark canvas plus a blur, instead of a flat opaque panel. Use
+   alongside bg-panel where a floating, layered feel fits (cards, chips,
+   modals); bg-panel alone stays for surfaces that need full opacity for
+   text-heavy content. */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 @media (prefers-reduced-motion: reduce) {

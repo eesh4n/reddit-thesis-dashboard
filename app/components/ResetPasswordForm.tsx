@@ -23,7 +23,7 @@ export default function ResetPasswordForm() {
     <div className="flex min-h-screen items-center justify-center bg-ink px-6">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-gold to-[#b8842b] font-display text-base font-bold text-[#1a1204] shadow-[0_6px_16px_-6px_var(--color-gold)]">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-accent to-[#1d6fe0] font-display text-base font-bold text-[#ffffff] shadow-[0_6px_16px_-6px_var(--color-accent)]">
             ◆
           </div>
           <div className="text-left">
@@ -45,7 +45,7 @@ export default function ResetPasswordForm() {
               <p className="text-[13px] text-mute">You can sign in with your new password now.</p>
               <button
                 onClick={() => router.push("/login")}
-                className="mt-2 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-[13.5px] font-semibold text-[#1a1204] transition-[filter] duration-150 hover:brightness-110"
+                className="mt-2 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-[13.5px] font-semibold text-[#ffffff] transition-[filter] duration-150 hover:brightness-110"
               >
                 Go to sign in
               </button>
@@ -97,7 +97,7 @@ export default function ResetPasswordForm() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       autoComplete="new-password"
-                      className="w-full rounded-lg border border-edge bg-panel-2 py-2.5 pl-9 pr-3.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                      className="w-full rounded-lg border border-edge bg-panel-2 py-2.5 pl-9 pr-3.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-accent focus:outline-none"
                       placeholder="At least 8 characters"
                     />
                   </div>
@@ -112,7 +112,7 @@ export default function ResetPasswordForm() {
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       autoComplete="new-password"
-                      className="w-full rounded-lg border border-edge bg-panel-2 py-2.5 pl-9 pr-3.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+                      className="w-full rounded-lg border border-edge bg-panel-2 py-2.5 pl-9 pr-3.5 font-mono text-[13px] text-fg placeholder:text-faint focus:border-accent focus:outline-none"
                       placeholder="Retype the password"
                     />
                   </div>
@@ -128,7 +128,7 @@ export default function ResetPasswordForm() {
                 <button
                   type="submit"
                   disabled={pending}
-                  className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-[13.5px] font-semibold text-[#1a1204] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-[13.5px] font-semibold text-[#ffffff] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pending ? "Saving…" : "Reset password"}
                 </button>
@@ -138,7 +138,7 @@ export default function ResetPasswordForm() {
         </div>
 
         <p className="mt-5 text-center text-[13px] text-mute">
-          <Link href="/login" className="text-gold transition-colors hover:brightness-110">
+          <Link href="/login" className="text-accent transition-colors hover:brightness-110">
             Back to sign in
           </Link>
         </p>

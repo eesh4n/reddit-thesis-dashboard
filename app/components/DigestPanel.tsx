@@ -25,7 +25,7 @@ export default function DigestPanel({ digest }: { digest: Digest }) {
             <Link
               key={t.ticker}
               href={`/ticker/${t.ticker}`}
-              className="flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 transition-colors duration-150 hover:bg-panel-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              className="flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 transition-colors duration-150 hover:bg-panel-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <span className="font-mono text-[13px] font-semibold">{t.ticker}</span>
               <span className="text-[11.5px] text-faint">

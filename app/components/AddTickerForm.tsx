@@ -40,12 +40,12 @@ export default function AddTickerForm({
           placeholder={placeholder}
           aria-label={placeholder}
           aria-invalid={!!error}
-          className={`w-52 rounded-lg border bg-panel px-3.5 py-2 font-mono text-[13px] text-fg placeholder:text-faint focus:outline-none ${error ? "border-bear" : "border-edge focus:border-gold"}`}
+          className={`w-52 rounded-lg border bg-panel px-3.5 py-2 font-mono text-[13px] text-fg placeholder:text-faint focus:outline-none ${error ? "border-bear" : "border-edge focus:border-accent"}`}
         />
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-gold px-4 py-2 text-[13px] font-semibold text-[#1a1204] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[13px] font-semibold text-[#ffffff] transition-[filter] duration-150 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Plus size={14} /> Add
         </button>

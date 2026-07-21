@@ -26,7 +26,7 @@ export default async function SearchPage({
       </Link>
 
       <header className="mb-7 border-b border-edge-soft pb-7">
-        <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Search</p>
+        <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-accent">Search</p>
         <h1 className="mb-5 font-display text-[32px] font-bold leading-tight tracking-tight">
           Search every thesis
         </h1>
@@ -38,7 +38,7 @@ export default async function SearchPage({
             defaultValue={q}
             autoFocus
             placeholder="Search tickers, summaries, reasoning…"
-            className="w-full rounded-xl border border-edge bg-panel-2 py-3 pl-10 pr-4 text-[14px] text-fg placeholder:text-faint focus:border-gold focus:outline-none"
+            className="w-full rounded-xl border border-edge bg-panel-2 py-3 pl-10 pr-4 text-[14px] text-fg placeholder:text-faint focus:border-accent focus:outline-none"
           />
         </form>
       </header>
@@ -62,7 +62,7 @@ export default async function SearchPage({
               <span className="text-[11px] text-faint">·</span>
               <Link
                 href={`/ticker/${t.ticker}`}
-                className="font-mono text-[12px] font-bold tracking-tight text-gold transition-colors hover:brightness-110"
+                className="font-mono text-[12px] font-bold tracking-tight text-accent transition-colors hover:brightness-110"
               >
                 {t.ticker}
               </Link>
@@ -78,7 +78,7 @@ export default async function SearchPage({
               href={t.rawPost.permalink}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex cursor-pointer items-center gap-1 font-mono text-[11.5px] text-faint transition-colors duration-150 hover:text-gold"
+              className="mt-3 inline-flex cursor-pointer items-center gap-1 font-mono text-[11.5px] text-faint transition-colors duration-150 hover:text-accent"
             >
               view source post <ExternalLink size={11} />
             </a>

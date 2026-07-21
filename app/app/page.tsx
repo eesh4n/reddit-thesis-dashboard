@@ -59,7 +59,7 @@ export default async function Home() {
             told you nothing about your book. Aggregate sentiment now lives
             scoped to Holdings and Watchlist in DashboardSections. ── */}
         <header className="border-b border-edge-soft px-11 pb-8 pt-10 max-md:px-6">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Morning briefing</p>
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-accent">Morning briefing</p>
           <h1 className="font-display text-[40px] font-bold leading-[1.02] tracking-tight max-md:text-[30px]">
             What Reddit is saying <span className="text-mute">about your book.</span>
           </h1>

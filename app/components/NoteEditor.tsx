@@ -50,7 +50,7 @@ export default function NoteEditor({ thesisId, initialNote }: { thesisId: string
         maxLength={MAX_LENGTH}
         rows={2}
         placeholder="Agree? Already positioned? Skip it?"
-        className={`w-full resize-none rounded-lg border bg-panel-2 px-3 py-2 text-[13px] text-fg placeholder:text-faint focus:outline-none ${error ? "border-bear" : "border-edge-soft focus:border-gold"}`}
+        className={`w-full resize-none rounded-lg border bg-panel-2 px-3 py-2 text-[13px] text-fg placeholder:text-faint focus:outline-none ${error ? "border-bear" : "border-edge-soft focus:border-accent"}`}
       />
       {error && <p className="mt-1 text-[11px] text-bear">{error}</p>}
     </div>

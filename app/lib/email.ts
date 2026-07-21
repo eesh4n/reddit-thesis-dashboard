@@ -23,7 +23,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
         <h2 style="margin-bottom: 4px;">Reset your password</h2>
         <p style="color: #555;">Someone requested a password reset for this email on Sentiment Desk. If that wasn't you, you can ignore this — your password won't change.</p>
         <p>
-          <a href="${resetUrl}" style="display: inline-block; margin-top: 12px; padding: 10px 20px; background: #d4a017; color: #1a1204; text-decoration: none; border-radius: 8px; font-weight: 600;">
+          <a href="${resetUrl}" style="display: inline-block; margin-top: 12px; padding: 10px 20px; background: #4f9cff; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600;">
             Reset password
           </a>
         </p>

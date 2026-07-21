@@ -51,7 +51,7 @@ export default function Sidebar({
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-6 self-start border-r border-edge bg-gradient-to-b from-panel to-ink p-6 max-md:static max-md:h-auto max-md:flex-row max-md:flex-wrap max-md:items-center max-md:gap-4 max-md:p-4">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold to-[#c2790f] font-display text-lg font-bold text-[#1a1204] shadow-[0_8px_20px_-6px_var(--color-gold)]">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-[#1d6fe0] font-display text-lg font-bold text-[#ffffff] shadow-[0_8px_20px_-6px_var(--color-accent)]">
           ◆
         </div>
         <div>
@@ -116,7 +116,7 @@ export default function Sidebar({
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               aria-label="Sign out"
-              className="shrink-0 cursor-pointer rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors duration-150 hover:border-bear hover:text-bear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              className="shrink-0 cursor-pointer rounded-md border border-edge bg-panel-2 p-1.5 text-mute transition-colors duration-150 hover:border-bear hover:text-bear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <LogOut size={13} />
             </button>
@@ -129,7 +129,7 @@ export default function Sidebar({
           <div className="mt-4 border-t border-edge-soft pt-3.5">
             <Link
               href="/login"
-              className="flex items-center gap-1.5 text-[11.5px] font-semibold text-gold transition-colors duration-150 hover:brightness-110"
+              className="flex items-center gap-1.5 text-[11.5px] font-semibold text-accent transition-colors duration-150 hover:brightness-110"
             >
               <LogIn size={13} className="shrink-0" />
               Log in to save across devices

@@ -56,7 +56,7 @@ export default async function AlertsPage() {
       </Link>
 
       <header className="mb-7 border-b border-edge-soft pb-7">
-        <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Alerts</p>
+        <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-accent">Alerts</p>
         <h1 className="mb-2 font-display text-[32px] font-bold leading-tight tracking-tight">
           Holdings turning bearish
         </h1>
@@ -69,7 +69,7 @@ export default async function AlertsPage() {
       {holdings.length === 0 ? (
         <div className="rounded-xl border border-dashed border-edge p-10 text-center text-[13px] text-faint">
           You don&apos;t have any holdings yet.{" "}
-          <Link href="/#holdings" className="text-gold hover:brightness-110">
+          <Link href="/#holdings" className="text-accent hover:brightness-110">
             Add some
           </Link>{" "}
           to start tracking bearish spikes.
@@ -87,7 +87,7 @@ export default async function AlertsPage() {
                 <AlertTriangle size={16} className="text-bear" />
                 <Link
                   href={`/ticker/${ticker}`}
-                  className="font-mono text-lg font-extrabold tracking-tight transition-colors hover:text-gold"
+                  className="font-mono text-lg font-extrabold tracking-tight transition-colors hover:text-accent"
                 >
                   {ticker}
                 </Link>
@@ -106,7 +106,7 @@ export default async function AlertsPage() {
                       href={t.permalink}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-mono text-[11px] text-faint transition-colors hover:text-gold"
+                      className="inline-flex items-center gap-1 font-mono text-[11px] text-faint transition-colors hover:text-accent"
                     >
                       view source post <ExternalLink size={10} />
                     </a>

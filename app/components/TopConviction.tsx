@@ -39,14 +39,14 @@ export default function TopConviction({ theses }: { theses: ConvictionThesis[] }
             <div className="flex items-center gap-2.5">
               <Link
                 href={`/ticker/${t.ticker}`}
-                className="cursor-pointer font-mono text-base font-extrabold tracking-tight transition-colors duration-150 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                className="cursor-pointer font-mono text-base font-extrabold tracking-tight transition-colors duration-150 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 {t.ticker}
               </Link>
               <span className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${chipCls[t.sentiment]}`}>
                 {t.sentiment}
               </span>
-              <span className="ml-auto inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-gold">
+              <span className="ml-auto inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-accent">
                 <Award size={11} /> {Math.round(t.confidence * 100)}%
               </span>
             </div>
@@ -56,7 +56,7 @@ export default function TopConviction({ theses }: { theses: ConvictionThesis[] }
               href={t.permalink}
               target="_blank"
               rel="noreferrer"
-              className="mt-auto inline-flex cursor-pointer items-center gap-1 font-mono text-[11px] text-faint transition-colors duration-150 hover:text-gold"
+              className="mt-auto inline-flex cursor-pointer items-center gap-1 font-mono text-[11px] text-faint transition-colors duration-150 hover:text-accent"
             >
               r/{t.subreddit} <ExternalLink size={10} />
             </a>

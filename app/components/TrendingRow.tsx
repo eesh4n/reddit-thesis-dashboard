@@ -19,7 +19,7 @@ export default function TrendingRow({
       <span className="w-6 shrink-0 font-mono text-xs font-bold text-faint">{String(rank).padStart(2, "0")}</span>
       <Link
         href={`/ticker/${agg.ticker}`}
-        className="w-16 shrink-0 cursor-pointer font-mono text-base font-extrabold tracking-tight transition-colors duration-150 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        className="w-16 shrink-0 cursor-pointer font-mono text-base font-extrabold tracking-tight transition-colors duration-150 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         {agg.ticker}
       </Link>
@@ -40,7 +40,7 @@ export default function TrendingRow({
       <button
         onClick={onWatch}
         aria-label="Add to watchlist"
-        className="ml-auto inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors duration-150 hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        className="ml-auto inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-edge bg-panel-2 px-2.5 py-1.5 text-xs text-mute transition-colors duration-150 hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <Bookmark size={12} /> <span className="hidden sm:inline">Watch</span>
       </button>
