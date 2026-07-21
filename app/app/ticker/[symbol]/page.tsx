@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { ArrowLeft, Users } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getThesesForTicker, getDailySentiment, getUserNotes, getUserFeedback } from "@/lib/queries";
@@ -27,7 +28,13 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
 
   if (rows.length === 0) notFound();
 
-  const userId = session?.user?.id;
+  // Guests still get their own notes/votes — middleware already guarantees
+  // a guestId cookie is present for anyone who reached this page without a
+  // real session, so a plain read (no cookie write) is enough here. Writing
+  // the cookie only happens in /api/portfolio, /api/notes, /api/feedback —
+  // real Route Handlers, where Next.js actually allows it.
+  const jar = await cookies();
+  const userId = session?.user?.id ?? jar.get("guestId")?.value;
   const [notes, feedback] = userId
     ? await Promise.all([
         getUserNotes(userId, rows.map((r) => r.id)),
