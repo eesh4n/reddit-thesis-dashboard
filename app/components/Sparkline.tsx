@@ -1,8 +1,8 @@
 // Small inline SVG trend line — no charting library needed. Plots net
 // sentiment (bull - bear) per day, with an optional price overlay so you can
 // eyeball whether Reddit sentiment actually tracks the stock's real moves.
-type SentimentPoint = { date: string; net: number; total: number };
-type PricePoint = { date: string; close: number };
+import { AlertTriangle } from "lucide-react";
+import { forwardFillPrices, detectDivergence, type SentimentPoint, type PricePoint } from "@/lib/view";
 
 export default function Sparkline({
   points,
@@ -43,13 +43,7 @@ export default function Sparkline({
   // ranges, so sharing a y-axis would flatten one of them to nothing.
   let pricePath: string | null = null;
   if (pricePoints && pricePoints.length > 1) {
-    const closeByDate = new Map(pricePoints.map((p) => [p.date, p.close]));
-    let lastKnown = pricePoints[0].close;
-    const filled = points.map((p) => {
-      const close = closeByDate.get(p.date);
-      if (close != null) lastKnown = close;
-      return lastKnown;
-    });
+    const filled = forwardFillPrices(points, pricePoints);
     const pMax = Math.max(...filled);
     const pMin = Math.min(...filled);
     const pRange = pMax - pMin || 1;
@@ -60,6 +54,10 @@ export default function Sparkline({
     });
     pricePath = pCoords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ");
   }
+
+  // "Is the crowd wrong or early?" — price and sentiment moved opposite
+  // ways over the last several days. See detectDivergence for thresholds.
+  const divergence = detectDivergence(points, pricePoints);
 
   return (
     <div>
@@ -102,6 +100,22 @@ export default function Sparkline({
           <span className="inline-flex items-center gap-1">
             <span className="inline-block h-0.5 w-3 rounded-full border-t border-dashed border-gold" /> price
           </span>
+        </div>
+      )}
+      {divergence && (
+        <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-gold/30 bg-gold/10 px-2.5 py-2 text-[11px] leading-snug text-gold">
+          <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+          {divergence.direction === "priceUpSentimentDown" ? (
+            <span>
+              Diverging: price up {divergence.priceChangePct.toFixed(1)}% while Reddit turned bearish over the same
+              stretch — the crowd may be early, or wrong.
+            </span>
+          ) : (
+            <span>
+              Diverging: price down {Math.abs(divergence.priceChangePct).toFixed(1)}% while Reddit turned bullish
+              over the same stretch — the crowd may be early, or wrong.
+            </span>
+          )}
         </div>
       )}
     </div>

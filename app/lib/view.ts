@@ -145,3 +145,57 @@ export function hasBearishAlert(theses: { sentiment: ThesisView["sentiment"]; po
   }
   return bear >= ALERT_MIN_BEARISH && bear > bull;
 }
+
+export type SentimentPoint = { date: string; net: number; total: number };
+export type PricePoint = { date: string; close: number };
+
+// Markets are closed weekends/holidays, sentiment isn't — forward-fill the
+// last known close onto every sentiment-series date so the two can be
+// compared point-for-point. Shared by the sparkline overlay and divergence
+// detection so they can never disagree about what price applied on a given
+// day.
+export function forwardFillPrices(points: SentimentPoint[], pricePoints: PricePoint[]): number[] {
+  const closeByDate = new Map(pricePoints.map((p) => [p.date, p.close]));
+  let lastKnown = pricePoints[0].close;
+  return points.map((p) => {
+    const close = closeByDate.get(p.date);
+    if (close != null) lastKnown = close;
+    return lastKnown;
+  });
+}
+
+const DIVERGENCE_WINDOW_DAYS = 5; // "several days" — long enough to filter single-day noise
+const DIVERGENCE_MIN_PRICE_MOVE_PCT = 1.5;
+const DIVERGENCE_MIN_SENTIMENT_NET = 2; // at least this much net bull/bear lean over the window
+
+export type Divergence = {
+  direction: "priceUpSentimentDown" | "priceDownSentimentUp";
+  priceChangePct: number;
+  sentimentNet: number;
+} | null;
+
+// "Is the crowd wrong or early?" — flags when price and Reddit sentiment
+// have moved in opposite directions over the last several days. Both sides
+// need a real move (not noise): the price change must clear a minimum
+// percentage, and the sentiment lean must clear a minimum net bull/bear
+// count over the same window, before this fires.
+export function detectDivergence(points: SentimentPoint[], pricePoints: PricePoint[] | null | undefined): Divergence {
+  if (!pricePoints || pricePoints.length < 2 || points.length < DIVERGENCE_WINDOW_DAYS) return null;
+
+  const filled = forwardFillPrices(points, pricePoints);
+  const window = points.slice(-DIVERGENCE_WINDOW_DAYS);
+  const priceStart = filled[filled.length - DIVERGENCE_WINDOW_DAYS];
+  const priceEnd = filled[filled.length - 1];
+  if (!priceStart) return null;
+
+  const priceChangePct = ((priceEnd - priceStart) / priceStart) * 100;
+  const sentimentNet = window.reduce((sum, p) => sum + p.net, 0);
+
+  if (priceChangePct >= DIVERGENCE_MIN_PRICE_MOVE_PCT && sentimentNet <= -DIVERGENCE_MIN_SENTIMENT_NET) {
+    return { direction: "priceUpSentimentDown", priceChangePct, sentimentNet };
+  }
+  if (priceChangePct <= -DIVERGENCE_MIN_PRICE_MOVE_PCT && sentimentNet >= DIVERGENCE_MIN_SENTIMENT_NET) {
+    return { direction: "priceDownSentimentUp", priceChangePct, sentimentNet };
+  }
+  return null;
+}
