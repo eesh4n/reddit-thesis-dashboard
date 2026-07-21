@@ -7,6 +7,7 @@ import json
 import re
 import time
 import db
+import price
 
 MODEL = "gemini-2.5-flash-lite"  # higher free-tier limits than full flash; ample for extraction
 # The free tier caps REQUESTS (per-minute and per-day), not tokens — a request
@@ -179,9 +180,11 @@ def run_extraction(llm_client) -> dict:
                     # .get() here means a single malformed thesis object can
                     # never take down the whole run again — it did once, when
                     # ticker was accessed directly and one response omitted it.
+                    ticker = t.get("ticker", "")
                     db.insert_thesis(
-                        b["id"], t.get("ticker", ""), t.get("summary", ""), t.get("reasoning", ""),
+                        b["id"], ticker, t.get("summary", ""), t.get("reasoning", ""),
                         t.get("sentiment", "neutral"), float(t.get("confidence", 0.0)),
+                        price.get_price(ticker),
                     )
                     inserted += 1
                 except Exception as e:

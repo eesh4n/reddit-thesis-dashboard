@@ -90,17 +90,22 @@ model RawPost {
 }
 
 model Thesis {
-  id          String       @id @default(cuid())
-  rawPostId   String
-  ticker      String
-  summary     String
-  reasoning   String       @default("")
-  sentiment   String
-  confidence  Float
-  extractedAt DateTime     @default(now())
-  rawPost     RawPost      @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
-  notes       ThesisNote[]
-  feedback    ThesisFeedback[]
+  id                String       @id @default(cuid())
+  rawPostId         String
+  ticker            String
+  summary           String
+  reasoning         String       @default("")
+  sentiment         String
+  confidence        Float
+  extractedAt       DateTime     @default(now())
+  priceAtExtraction Float?       // ticker's price at the moment this thesis was extracted —
+                                  // the prerequisite for backtesting sentiment against what the
+                                  // stock actually did afterward. Null when the price lookup
+                                  // failed (bad ticker, delisted, API hiccup) or for theses
+                                  // extracted before this column existed.
+  rawPost           RawPost      @relation(fields: [rawPostId], references: [id], onDelete: Cascade)
+  notes             ThesisNote[]
+  feedback          ThesisFeedback[]
 
   @@index([ticker, extractedAt])
 }

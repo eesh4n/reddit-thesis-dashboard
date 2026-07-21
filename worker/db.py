@@ -54,17 +54,17 @@ def get_unextracted_posts() -> list[dict]:
         )
         return cur.fetchall()
 
-def insert_thesis(raw_post_id: str, ticker: str, summary: str, reasoning: str, sentiment: str, confidence: float):
+def insert_thesis(raw_post_id: str, ticker: str, summary: str, reasoning: str, sentiment: str, confidence: float, price_at_extraction: float | None = None):
     conn = get_connection()
     with conn.cursor() as cur:
             cur.execute(
             """
-            INSERT INTO "Thesis" (id, "rawPostId", ticker, summary, reasoning, sentiment, confidence)
-            VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s)
+            INSERT INTO "Thesis" (id, "rawPostId", ticker, summary, reasoning, sentiment, confidence, "priceAtExtraction")
+            VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (raw_post_id, ticker, summary, reasoning, sentiment, confidence),
+            (raw_post_id, ticker, summary, reasoning, sentiment, confidence, price_at_extraction),
 
-            # inserts a row into thesis table. gen_random_uuid() generates the id in postgres. the %s placeholders map to the five variables shown below, psycopg2 fills them in safely.
+            # inserts a row into thesis table. gen_random_uuid() generates the id in postgres. the %s placeholders map to the six variables shown below, psycopg2 fills them in safely.
         )
     conn.commit()
 
