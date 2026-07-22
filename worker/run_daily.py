@@ -1,4 +1,4 @@
-# puts everything together, the claude client, the praw api, and then reddit_ingest and then extract
+# puts everything together: the Gemini client, reddit_ingest, and extract
 
 import socket
 import time
