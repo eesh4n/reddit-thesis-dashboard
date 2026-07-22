@@ -50,6 +50,7 @@ export default async function TickerDetailPage({ params }: { params: Promise<{ s
     confidence: r.confidence,
     extractedAt: r.extractedAt.toISOString(),
     postedAt: r.rawPost.postedAt.toISOString(),
+    priceAtExtraction: r.priceAtExtraction,
     permalink: r.rawPost.permalink,
     subreddit: r.rawPost.subreddit,
     author: r.rawPost.author,

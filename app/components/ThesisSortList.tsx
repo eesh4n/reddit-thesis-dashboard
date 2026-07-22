@@ -19,6 +19,7 @@ export type DetailThesis = {
   author: string; // source post's Reddit username — feeds duplicate-author consensus dedup
   note: string; // this user's own annotation, "" if none saved yet
   vote: "good" | "bad" | null; // this user's extraction-quality feedback
+  priceAtExtraction: number | null; // the ticker's real price the moment this thesis was pulled — null for theses extracted before this was tracked, or when the price lookup failed
 };
 
 const dotColor = { bullish: "bg-bull", bearish: "bg-bear", neutral: "bg-mute" } as const;
@@ -157,6 +158,14 @@ export default function ThesisSortList({ theses }: { theses: DetailThesis[] }) {
               </span>
               <span className="text-[11px] text-faint">·</span>
               <span className="font-mono text-[11px] text-faint">{Math.round(t.confidence * 100)}% confidence</span>
+              {t.priceAtExtraction != null && (
+                <>
+                  <span className="text-[11px] text-faint">·</span>
+                  <span className="font-mono text-[11px] text-faint" title="Price at the moment this thesis was extracted">
+                    ${t.priceAtExtraction.toFixed(2)} then
+                  </span>
+                </>
+              )}
               <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-faint">
                 <Calendar size={10} /> {formatPostDate(t.postedAt)}
               </span>
